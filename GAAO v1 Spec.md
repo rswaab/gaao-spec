@@ -340,8 +340,3 @@ System Spec
     - **Ψ** — deviation-classification space
     - **L** — loop schema
     - **𝓛** — state-transition operator
-  -
-  -
-  -
-  -
-  -
