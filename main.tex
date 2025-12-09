@@ -1,0 +1,577 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc} 
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{authblk}
+\usepackage{bbm}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\GAAOdef}{GAAO 1.0 (General Adaptive Agent Ontology), a unified event-sourced ontology for modeling and steering adaptive agents through time, integrating semantic topology, constraint systems, condition models, evidential reasoning, transformation dynamics, and recursive adaptation loops}
+
+\title{\GAAOdef}
+\author[1]{Robert Swaab}
+\affil[1]{Independent Researcher}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present \GAAOdef. 
+GAAO formalizes a general-purpose adaptive agent as the tuple 
+$A = (E, C, K, X, R, P, \Omega, I, L)$,
+where the agent is defined by an event-sourced ledger of behaviour, a hierarchical semantic topology, an explicit constraint fabric, a structured condition space, an evidential graph, a transformation layer capturing progress metrics and outcome effects, an adaptive reasoning engine, and a recursive adaptation loop governing temporal evolution of state.
+Unlike existing paradigms such as BDI, ACT-R, reinforcement learning, MAPE-K, or event-sourced architectures, GAAO unifies semantics, constraints, conditions, evidence, transformation dynamics, and recursive feedback into a single ontology for modeling and steering adaptive behaviour over time.
+\end{abstract}
+
+\section{Introduction}
+
+Adaptive agents---biological, artificial, organisational, or hybrid---must continuously interpret conditions, choose actions, accumulate evidence, and adjust behaviour across time.
+Most existing architectures focus on a subset of this problem:
+
+\begin{itemize}
+    \item BDI: beliefs, desires, intentions and plan choice,
+    \item ACT-R: human cognitive processes via production rules and memory systems,
+    \item reinforcement learning (RL): reward maximisation in Markovian environments,
+    \item MAPE-K: monitor--analyse--plan--execute over a knowledge base,
+    \item event-sourced architectures: state reconstruction from event streams.
+\end{itemize}
+
+What is missing is a single ontology that simultaneously:
+
+\begin{enumerate}
+    \item treats behaviour as an event-sourced ledger over time,
+    \item situates behaviour in a semantic topology of containers,
+    \item represents constraints as explicit commitments with evaluation functions,
+    \item models conditions as a structured space of dimensions and models,
+    \item treats evidence, deltas, drift, and trajectories as first-class objects,
+    \item captures progress and outcomes as transformation dynamics,
+    \item and closes the loop with a recursive adaptation operator over agent state.
+\end{enumerate}
+
+GAAO is proposed as such an ontology.
+It is not a single algorithm or implementation, but a formal structure from which many architectures (including human life systems, software agents, organisational agents, and hybrid human--AI systems) can be instantiated.
+
+In what follows we:
+
+\begin{itemize}
+    \item formally define the GAAO tuple and its layers,
+    \item provide a mathematical specification,
+    \item compare GAAO dimensionally with existing architectures (BDI, ACT-R, RL, MAPE-K, event-sourced systems),
+    \item and synthesise the uniqueness of GAAO as a unifying ontology for adaptive agents.
+\end{itemize}
+
+\section{Symbol Table}
+
+Table~\ref{tab:symbols} summarises the primary symbols used in GAAO.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\hline
+Symbol & Meaning \\
+\hline
+$T$ & Time domain \\
+$A$ & Attribute space \\
+$M$ & Engagement mode set \\
+$C$ & Semantic containers \\
+$\mathcal{T}$ & Container-type set \\
+$K$ & Constraints \\
+$\mathcal{P}(K)$ & Power set of constraints $K$ \\
+$X_d$ & Condition dimensions \\
+$X_m$ & Condition models \\
+$X$ & Condition space ($X_d \cup X_m$) \\
+$R$ & Evidence records \\
+$P$ & Progress records \\
+$\Omega$ & Outcome records \\
+$D$ & Deviation space \\
+$\Lambda$ & Metric space (for progress) \\
+$\mathcal{T}_r$ & Trajectory extraction operator \\
+$\mathrm{Drift}$ & Drift extraction operator \\
+$\Phi$ & Pattern space (drift and trajectories) \\
+$\Psi$ & Deviation-classification space \\
+$L$ & Recursive adaptation loop schema \\
+$\mathcal{L}$ & State-transition operator induced by $L$ \\
+\hline
+\end{tabular}
+\caption{Symbol table for GAAO.}
+\label{tab:symbols}
+\end{table}
+
+\section{Formal Definition of the General Adaptive Agent Ontology}
+
+A General Adaptive Agent in GAAO is defined as:
+\begin{equation}
+    A = (E, C, K, X, R, P, \Omega, I, L),
+\end{equation}
+where:
+\begin{itemize}[leftmargin=2cm]
+    \item[$E$] Event Ledger Layer,
+    \item[$C$] Semantic Topology Layer,
+    \item[$K$] Constraint Fabric,
+    \item[$X$] Condition Space Layer,
+    \item[$R$] Evidential Graph Layer,
+    \item[$P$] Progress Records (part of transformation layer),
+    \item[$\Omega$] Outcome Records (part of transformation layer),
+    \item[$I$] Adaptive Reasoning Engine,
+    \item[$L$] Recursive Adaptation Loop (schema and induced operator).
+\end{itemize}
+
+We now define each component.
+
+\subsection{Event Ledger Layer}
+
+Let:
+\[
+T \text{ (time domain)}, \quad
+A \text{ (attribute space)}, \quad
+M \text{ (engagement mode set)}.
+\]
+
+An event is defined as:
+\begin{equation}
+e = (t_s, t_e, \lambda_c, \lambda_m, \pi, \alpha, \sigma, \omega, \delta, \kappa),
+\end{equation}
+where:
+\begin{align*}
+    t_s, t_e &\in T & \text{start and end times}, \\
+    \lambda_c &\in C & \text{semantic container identifier}, \\
+    \lambda_m &\in M & \text{engagement mode}, \\
+    \pi, \alpha &\in A & \text{planned and actual attributes}, \\
+    \sigma &\in X & \text{condition snapshot}, \\
+    \omega &\in \Omega & \text{outcome record}, \\
+    \delta &\in D & \text{deviation signal}, \\
+    \kappa &\subseteq K & \text{applicable constraints}.
+\end{align*}
+
+The Event Ledger is the set:
+\[
+E = \{ e_1, e_2, \ldots \}.
+\]
+As a type, we can write:
+\begin{equation}
+E \subseteq T \times T \times C \times M \times A \times A \times X \times \Omega \times D \times \mathcal{P}(K),
+\end{equation}
+where $\mathcal{P}(K)$ is the power set of $K$.
+
+\subsection{Semantic Topology Layer}
+
+Let $\mathcal{T}$ be the set of container types.
+
+A semantic container is:
+\begin{equation}
+c = (id, \tau, parent, \varsigma, H_e, H_\omega, H_p, H_\phi),
+\end{equation}
+where:
+\begin{itemize}
+    \item $id$ is a unique container identifier,
+    \item $\tau \in \mathcal{T}$ is the container type,
+    \item $parent \in C \cup \{\emptyset\}$ is the unique parent container or null (root),
+    \item $\varsigma$ is a container state vector,
+    \item $H_e$ is event history attached to the container,
+    \item $H_\omega$ is outcome history,
+    \item $H_p$ is progress history,
+    \item $H_\phi$ is drift history (sequence of drift signals $\phi$).
+\end{itemize}
+
+The semantic topology is a rooted tree:
+\[
+G = (C, parent),
+\]
+with standard tree properties (one parent, acyclic, connected at the root).
+
+\subsection{Constraint Fabric}
+
+A constraint is:
+\begin{equation}
+k = (id, \iota, \theta, \mu, W, L_c, \gamma, H_k),
+\end{equation}
+where:
+\begin{itemize}
+    \item $\iota$ is an intention descriptor,
+    \item $\theta$ is an obligation specification,
+    \item $\mu$ is a measurement mode,
+    \item $W \subseteq T$ is an activation window,
+    \item $L_c \subseteq C$ is the set of bound containers,
+    \item $\gamma$ is an evaluation function,
+    \item $H_k$ is the constraint's adjustment history.
+\end{itemize}
+
+For a given constraint $k \in K$, the evaluation function is:
+\begin{equation}
+\gamma_k : (E, X, C) \to [0,1] \cup \{\text{fulfilled}, \text{violated}\}.
+\end{equation}
+
+\subsection{Transformation Layer: Progress and Outcomes}
+
+Let $\Lambda$ be the metric space for progress measurement.
+
+A progress record is:
+\begin{equation}
+p = (c, metric, v, d, e, t),
+\end{equation}
+where:
+\begin{itemize}
+    \item $c \in C$ is the container in which progress occurs,
+    \item $metric \in \Lambda$ is the progress metric,
+    \item $v$ is the magnitude,
+    \item $d \in \{-1, 0, 1\}$ is the direction (away from, neutral, toward),
+    \item $e \in E$ is the originating event,
+    \item $t \in T$ is the timestamp.
+\end{itemize}
+
+An outcome record is:
+\begin{equation}
+\omega = (i, x, s, \delta),
+\end{equation}
+where:
+\begin{itemize}
+    \item $i$ captures internal effects,
+    \item $x$ captures external effects,
+    \item $s$ is a state-transition marker,
+    \item $\delta \in D$ is a deviation classification.
+\end{itemize}
+
+\subsection{Condition Space Layer}
+
+Let:
+\[
+X_d \text{ be the set of condition dimensions}, \quad
+X_m \text{ be the set of condition models}, \quad
+X = X_d \cup X_m.
+\]
+
+A condition dimension is:
+\[
+\xi = (name, type, value, t, source, conf, exp),
+\]
+capturing an atomic contextual or state-like quantity.
+
+A condition model is:
+\begin{equation}
+M = (name, type, inputs, rules, update, confidence, version),
+\end{equation}
+where:
+\begin{itemize}
+    \item $inputs \subseteq X_d$,
+    \item $rules$ encodes interpretive logic,
+    \item $update : (X, R) \to X$ defines model evolution,
+    \item $confidence$ is a model-level confidence score,
+    \item $version$ is a revision identifier.
+\end{itemize}
+
+The condition profile at time $t$ is:
+\[
+X_t \subseteq X.
+\]
+
+\subsection{Evidential Graph Layer}
+
+Let $D$ be the deviation space.
+
+An evidence record is:
+\begin{equation}
+r = (id, type, t, c, k, e, raw, derived, conf, src),
+\end{equation}
+where $type$ may be one of:
+\{EventEvidence, DeltaEvidence, ProgressEvidence, OutcomeEvidence, DriftSignal, TrajectorySignal\}.
+
+A delta record is:
+\begin{equation}
+\delta = f(\pi, \alpha) \in D,
+\end{equation}
+computed from planned vs.\ actual attributes.
+
+A drift signal is:
+\begin{equation}
+\phi = (type, magnitude, recurrence, link, t_1, t_n),
+\end{equation}
+and a trajectory signal is:
+\begin{equation}
+\tau = (pattern, container, direction, confidence, window).
+\end{equation}
+
+In addition to the delta operator $f_\delta$, GAAO defines evidential extraction operators:
+\begin{equation}
+\mathcal{T}_r : R \to \{\tau_1,\dots,\tau_m\},
+\end{equation}
+\begin{equation}
+\mathrm{Drift} : R \to \{\phi_1,\dots,\phi_n\},
+\end{equation}
+mapping evidence records into recognised trajectory and drift-signal sets.
+
+\subsection{Adaptive Reasoning Engine}
+
+The adaptive reasoning engine is:
+\begin{equation}
+I : (X, E, K, C, R) \to \{\Pi, \Delta, S, \Upsilon\},
+\end{equation}
+where:
+\begin{itemize}
+    \item $\Pi$ is the space of plan proposals,
+    \item $\Delta$ is the space of adjustments,
+    \item $S$ is the space of simulations,
+    \item $\Upsilon$ is the space of interpretive summaries.
+\end{itemize}
+
+Let:
+\[
+\Phi \text{ be the pattern space (drift and trajectories)}, \quad
+\Psi \text{ be the deviation-classification space}.
+\]
+
+GAAO defines the following operators:
+\begin{align*}
+    I_{\text{int}}(R, X) &\to \Upsilon & \text{(interpretation)}, \\
+    I_{\text{pat}}(R) &\to \Phi & \text{(pattern extraction)}, \\
+    I_{\Delta} : D &\to \Psi & \text{(deviation classification)}, \\
+    I_{\text{plan}}(K, X, C) &\to \Pi & \text{(planning)}, \\
+    I_{\text{adj}}(K, C, X, R) &\to \Delta & \text{(adjustment)}, \\
+    I_{\text{sim}}(state, window) &\to S & \text{(simulation)}.
+\end{align*}
+
+\subsection{Recursive Adaptation Loop}
+
+The loop schema is:
+\[
+L = \{\text{Plan} \to \text{Execute} \to \text{Log} \to \text{Interpret} \to \text{Adjust}\}.
+\]
+
+The operational state at time $t$ is:
+\[
+state_t = (K_t, C_t, X_t, E_t, R_t).
+\]
+
+Let $\mathcal{L}$ be the induced state-transition operator:
+\begin{equation}
+    state_{t+1} = \mathcal{L}(state_t).
+\end{equation}
+
+Progress $P$ and outcomes $\Omega$ are derived from $(E, C, R)$ under this loop.
+
+\section{Mathematical Specification Summary}
+
+We briefly summarise the mathematical structure.
+
+\subsection{Core Sets}
+
+\begin{itemize}
+    \item $T$ — time domain,
+    \item $A$ — attribute space,
+    \item $M$ — engagement modes,
+    \item $C$ — containers,
+    \item $\mathcal{T}$ — container-type set,
+    \item $K$ — constraints,
+    \item $X_d$ — condition dimensions,
+    \item $X_m$ — condition models,
+    \item $X = X_d \cup X_m$ — condition space,
+    \item $R$ — evidence records,
+    \item $P$ — progress records,
+    \item $\Omega$ — outcome records,
+    \item $D$ — deviation space,
+    \item $\Lambda$ — metric space.
+\end{itemize}
+
+Events inhabit:
+\begin{equation}
+E \subseteq T \times T \times C \times M \times A \times A \times X \times \Omega \times D \times \mathcal{P}(K).
+\end{equation}
+
+The condition profile:
+\[
+X_t \subseteq X.
+\]
+
+Semantic topology:
+\[
+G = (C, parent), \quad parent : C \to C \cup \{\emptyset\}.
+\]
+
+Constraint evaluation:
+\[
+\gamma_k : (E, X, C) \to [0,1] \cup \{\text{fulfilled}, \text{violated}\}.
+\]
+
+Condition dynamics:
+\[
+update_M : (X, R) \to X, \quad update_X : (X, R) \to X.
+\]
+
+Evidential operators:
+\[
+f_\delta : ( \pi, \alpha ) \to D, \quad
+\mathcal{T}_r : R \to \{\tau_1,\dots,\tau_m\}, \quad
+\mathrm{Drift} : R \to \{\phi_1,\dots,\phi_n\}.
+\]
+
+Adaptive reasoning:
+\[
+I : (X, E, K, C, R) \to \{\Pi, \Delta, S, \Upsilon\}, \quad
+I_{\Delta} : D \to \Psi.
+\]
+
+Recursive adaptation:
+\[
+state_t = (K_t, C_t, X_t, E_t, R_t), \quad state_{t+1} = \mathcal{L}(state_t).
+\]
+
+\section{Comparison to Existing Agent Architectures}
+
+We sketch dimensional comparisons; these can be expanded in a longer version.
+
+\subsection{BDI (Belief--Desire--Intention)}
+
+BDI focuses on beliefs (world knowledge), desires (goals), intentions (committed goals), and plans.
+In GAAO terms:
+
+\begin{itemize}
+    \item Beliefs correspond to aspects of $X$ and $R$,
+    \item Desires correspond to intention descriptors $\iota$ in $K$,
+    \item Intentions correspond to active constraints over windows $W$,
+    \item Plans correspond to outputs of $I_{\text{plan}}$ and $I_{\text{sim}}$.
+\end{itemize}
+
+BDI captures a subset of GAAO's concerns: primarily goal/commitment management and deliberative planning.
+GAAO additionally formalises evidential truth, delta and drift, semantic topology, and condition models as first-class components of the ontology.
+
+\subsection{ACT-R}
+
+ACT-R is a cognitive architecture for human cognition built on production rules and multiple memory systems.
+GAAO differs by:
+
+\begin{itemize}
+    \item using an explicit event ledger $E$,
+    \item modelling semantics via containers $C$ and types $\mathcal{T}$,
+    \item treating constraints $K$ as commitments with evaluation functions,
+    \item modelling conditions via $X_d, X_m$,
+    \item using an evidential graph $R$ with drift and trajectories.
+\end{itemize}
+
+ACT-R provides a rich internal cognitive model, but does not attempt to be an event-sourced, constraint-governed, semantics-explicit ontology as GAAO does.
+
+\subsection{Reinforcement Learning (RL)}
+
+Reinforcement learning formalises:
+
+\begin{itemize}
+    \item state space,
+    \item action space,
+    \item reward function,
+    \item policy and value functions.
+\end{itemize}
+
+In contrast:
+
+\begin{itemize}
+    \item RL optimises cumulative reward; GAAO maintains constraint alignment and adaptive behaviour under multiple signals.
+    \item RL states are Markovian vectors; GAAO states include condition profiles $X_t$ and container states $\varsigma$.
+    \item RL rewards are scalar; GAAO outcomes $\omega$ are multi-signal internal and external transformations.
+    \item GAAO explicitly models semantics, constraints, evidence, and multi-scale adaptation.
+\end{itemize}
+
+\subsection{MAPE-K}
+
+MAPE-K (monitor--analyse--plan--execute over knowledge) is a loop pattern for self-adaptive systems.
+GAAO can be viewed as a granular refinement:
+
+\begin{itemize}
+    \item Monitor $\to$ Event Ledger + Evidential Graph $(E, R)$,
+    \item Analyse $\to$ $I_{\text{int}}, I_{\text{pat}}, I_{\Delta}$ over $(X, R)$,
+    \item Plan $\to$ $I_{\text{plan}}$,
+    \item Execute $\to$ event realisation and updates to $E$,
+    \item Knowledge $\to$ $(C, X, R)$ plus constraint fabric $K$.
+\end{itemize}
+
+\subsection{Event-Sourced Architectures}
+
+Event-sourced systems store events as canonical truth and reconstruct state from event streams.
+GAAO adopts this backbone but extends it with:
+
+\begin{itemize}
+    \item a semantic topology $C$,
+    \item an explicit constraint fabric $K$,
+    \item condition space $X$,
+    \item evidential graph $R$,
+    \item transformation layer $(P, \Omega)$,
+    \item adaptive reasoning $I$,
+    \item recursive adaptation loop $\mathcal{L}$.
+\end{itemize}
+
+\section{Synthesis of Uniqueness}
+
+We summarise the structural differences of GAAO without overclaiming.
+
+\subsection{Cross-Domain Integration}
+
+GAAO integrates:
+
+\begin{itemize}
+    \item temporal event sourcing (Event Ledger $E$),
+    \item hierarchical semantic structure (Semantic Topology $C$),
+    \item formal constraint algebra (Constraint Fabric $K$),
+    \item condition-space modelling (Condition Space $X$),
+    \item evidential truth engine (Evidential Graph $R$ with deltas, drift, trajectories),
+    \item transformation modelling (Progress $P$ and Outcomes $\Omega$),
+    \item adaptive reasoning (engine $I$),
+    \item recursive adaptation loop ($L$, $\mathcal{L}$).
+\end{itemize}
+
+Existing frameworks address subsets of this list.
+GAAO's contribution is a unified ontology spanning all of them.
+
+\subsection{Delta and Drift as First-Class Constructs}
+
+GAAO treats:
+
+\begin{itemize}
+    \item $\delta = f(\pi, \alpha)$ (delta),
+    \item drift signals $\phi$,
+    \item trajectory signals $\tau$,
+\end{itemize}
+
+as first-class objects tightly coupled with constraints, containers, and trajectories.
+This provides a principled way to reason about misalignment between intended and actual behaviour across time.
+
+\subsection{Semantics, Evidence, Constraints Co-Defined}
+
+GAAO co-defines:
+
+\begin{itemize}
+    \item where things happen (semantic containers $C$),
+    \item what is supposed to happen (constraints $K$),
+    \item what actually happens (events $E$ and evidence $R$),
+    \item what changes (transformation layer $(P, \Omega)$),
+    \item under what conditions it happens (condition space $X$),
+    \item how behaviour is interpreted and adjusted (engine $I$ and loop $\mathcal{L}$).
+\end{itemize}
+
+This tight coupling of semantic structure, evidence, and constraints is not typical in existing agent or control architectures.
+
+\subsection{Positioning Statement}
+
+A cautious but accurate positioning is:
+
+\begin{quote}
+To our knowledge, GAAO offers a novel integration of event-sourced behaviour, hierarchical semantic structure, constraint governance, condition-space modelling, evidential reasoning, and multi-scale adaptation within a single agent ontology.
+Existing frameworks such as BDI, ACT-R, RL, MAPE-K, and event-sourced system designs each address subsets of these concerns.
+GAAO is intended as a unifying ontology that can host and interoperate with those approaches while providing an explicit temporal--semantic--constraint--evidential backbone.
+\end{quote}
+
+\section{Conclusion}
+
+We have introduced GAAO and provided a formal specification of its core components.
+By defining adaptive agents as tuples over event ledgers, semantic topologies, constraint fabrics, condition spaces, evidential graphs, transformation layers, adaptive reasoning engines, and recursive adaptation loops, GAAO offers a general ontology for modeling and steering adaptive behaviour over time.
+
+Future work includes:
+\begin{itemize}
+    \item instantiating specific architectures derived from GAAO (e.g.\ cognitive agents, life-architecture systems, organisational agents),
+    \item developing formal proofs about stability, convergence, or safety properties under specific instantiations of $\mathcal{L}$,
+    \item empirical evaluation of GAAO-based architectures in real-world domains.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,347 @@
+System Spec
+=====
+  - **1. FORMAL DEFINITION OF THE GENERAL ADAPTIVE AGENT ONTOLOGY (GAAO 1.0)**
+    - A General Adaptive Agent is defined as:
+    - **A = (E, C, K, X, R, P, Ω, I, L)**
+    - with:
+      - **E** — Event Ledger Layer
+      - **C** — Semantic Topology Layer
+      - **K** — Constraint Fabric
+      - **X** — Condition Space Layer
+      - **R** — Evidential Graph Layer
+      - **P, Ω** — Transformation Layer
+      - **I** — Adaptive Reasoning Engine
+      - **L** — Recursive Adaptation Loop (schema)
+    - **1.2 EVENT LEDGER LAYER**
+      - Let:
+        - **T** — time domain
+        - **A** — attribute space
+        - **M** — engagement mode set
+      - An Event is:
+        - **e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ)**
+      - Where:
+        - **t_s, t_e ∈ T** — start and end times
+        - **λ_c ∈ C** — semantic container identifier
+        - **λ_m ∈ M** — engagement mode
+        - **π, α ∈ A** — planned and actual attributes
+        - **σ ∈ X** — condition snapshot
+        - **ω ∈ Ω** — outcomes
+        - **δ ∈ D** — deviation signals
+        - **κ ⊆ K** — applicable constraints
+      - Event Ledger:
+        - **E = {e₁, e₂, …}**
+    - **1.3 SEMANTIC TOPOLOGY LAYER**
+      - Let:
+        - **𝒯** — container-type set
+      - A Semantic Container is:
+        - **c = (id, τ, parent, ς, H_e, H_ω, H_p, H_ϕ)**
+      - Where:
+        - **id** — unique container identifier
+        - **τ ∈ 𝒯** — container type
+        - **parent ∈ C ∪ {∅}** — unique parent or null root
+        - **ς** — container state vector
+        - **H_e** — event history
+        - **H_ω** — outcome history
+        - **H_p** — progress history
+        - **H_ϕ** — drift history (sequence of drift signals ϕ)
+      - Semantic topology:
+        - **G = (C, parent)** with standard rooted-tree properties.
+    - **1.4 CONSTRAINT FABRIC**
+      - A Constraint is:
+        - **k = (id, ι, θ, μ, W, L_c, γ, H_k)**
+      - Where:
+        - **ι** — intention descriptor
+        - **θ** — obligation specification
+        - **μ** — measurement mode
+        - **W ⊆ T** — activation window
+        - **L_c ⊆ C** — bound containers
+        - **γ** — evaluation function
+        - **H_k** — adjustment history
+    - **1.5 TRANSFORMATION LAYER**
+      - Let **Λ** be the metric space.
+      - **Progress Record:**
+        - **p = (c, metric, v, d, e, t)**
+      - Where:
+        - **c ∈ C**
+        - **metric ∈ Λ**
+        - **v** — magnitude
+        - **d ∈ {−1, 0, 1}** — relative direction
+        - **e ∈ E** — originating event
+        - **t ∈ T** — timestamp
+      - **Outcome Record:**
+        - **ω = (i, x, s, δ)**
+      - Where:
+        - **i** — internal effect
+        - **x** — external effect
+        - **s** — state-transition marker
+        - **δ ∈ D** — deviation classification
+    - **1.6 CONDITION SPACE LAYER**
+      - Let:
+        - **X_d** — Condition Dimensions
+        - **X_m** — Condition Models
+        - **X = X_d ∪ X_m** — Condition Space
+      - **Condition Dimension:**
+        - **ξ = (name, type, value, t, source, conf, exp)**
+      - **Condition Model:**
+        - **M = (name, type, inputs, rules, update, confidence, version)**
+      - Where:
+        - **inputs ⊆ X_d**
+        - **rules** — interpretive logic
+        - **update** — model evolution function
+        - **confidence** — model-level confidence
+        - **version** — revision identifier
+      - Condition profile at time t:
+        - **X_t ⊆ X**
+    - **1.7 EVIDENTIAL GRAPH LAYER**
+      - Let **D** be the deviation space.
+      - **Evidence Record:**
+        - **r = (id, type, t, c, k, e, raw, derived, conf, src)**
+      - Record types include:
+        - {EventEvidence, DeltaEvidence, ProgressEvidence, OutcomeEvidence, DriftSignal, TrajectorySignal}
+      - **Delta Record:**
+        - **δ = f(π, α) ∈ D**
+      - **Drift Signal:**
+        - **ϕ = (type, magnitude, recurrence, link, t₁, tₙ)**
+      - **Trajectory Signal:**
+        - **τ = (pattern, container, direction, confidence, window)**
+    - **1.8 ADAPTIVE REASONING ENGINE**
+      - **I : (X, E, K, C, R) → {Π, Δ, S, Υ}**
+      - Where:
+        - **Π** — plan proposals
+        - **Δ** — adjustments
+        - **S** — simulations
+        - **Υ** — interpretive summaries
+      - Let:
+        - **Φ** — pattern space (drift and trajectory patterns)
+        - **Ψ** — deviation-classification space
+      - **Operators:**
+        - **I_int(R, X) → Υ**
+        - **I_pat(R) → Φ**
+        - **I_Δ : D → Ψ**
+        - **I_plan(K, X, C) → Π**
+        - **I_adj(K, C, X, R) → Δ**
+        - **I_sim(state, window) → S**
+    - **1.9 RECURSIVE ADAPTATION LOOP**
+      - Loop schema:
+        - **L = {Plan → Execute → Log → Interpret → Adjust}**
+      - Operational state at time t:
+        - **state_t = (K_t, C_t, X_t, E_t, R_t)**
+      - Let:
+        - **𝓛** — induced state-transition operator
+      - Recursive update:
+        - **state_{t+1} = 𝓛(state_t)**
+      - Progress **P** and outcomes **Ω** are derived from **(E, C, R)**.
+  - **2. MATHEMATICAL SPECIFICATION SUMMARY**
+    - Core Sets
+      - **T** — time domain
+      - **A** — attribute space
+      - **M** — engagement modes
+      - **C** — containers
+      - **𝒯** — container-type set
+      - **K** — constraint set
+      - **X_d** — condition dimensions
+      - **X_m** — condition models
+      - **X = X_d ∪ X_m** — condition space
+      - **R** — evidence records
+      - **P** — progress records
+      - **Ω** — outcome records
+      - **D** — deviation space
+      - **Λ** — metric space
+    - Events
+      - **E ⊆ T × T × C × M × A × A × X × Ω × D × ℘(K)**
+      - Condition profile:
+        - **X_t ⊆ X**
+    - Semantic Topology
+      - **G = (C, parent)**
+      - **parent : C → C ∪ {∅}**
+    - Constraint Evaluation
+      - For **k ∈ K**:
+        - **γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated}**
+    - Condition Space Dynamics
+      - For **M ∈ X_m**:
+        - **update_M : (X, R) → X**
+      - Global:
+        - **update_X : (X, R) → X**
+    - Evidential Operators
+      - **f_δ : (π, α) → D**
+      - **𝒯_r : R → {τ₁,…,τ_m}**
+      - **Drift : R → {ϕ₁,…,ϕₙ}**
+    - Adaptive Reasoning
+      - **I : (X, E, K, C, R) → {Π, Δ, S, Υ}**
+      - **I_Δ : D → Ψ**
+    - Recursive Adaptation
+      - **state_t = (K_t, C_t, X_t, E_t, R_t)**
+      - **state_{t+1} = 𝓛(state_t)**
+  - **3. FORMAL COMPARISON TO EXISTING AGENT ARCHITECTURES**
+    - Here we compare by dimension, with cautious claims rather than absolutes.
+    - **3.1 BDI (Belief–Desire–Intention)**
+      - **BDI Core:**
+        - Beliefs: world knowledge
+        - Desires: goals
+        - Intentions: committed goals
+        - Plans: sequences of actions selected to satisfy intentions
+      - **Dimensional comparison (BDI vs GAAO):**
+        - Knowledge
+          - **BDI**: symbolic beliefs
+          - **GAAO**: Evidential Graph (events, deltas, drift, trajectories)
+        - Goals
+          - **BDI**: desires
+          - **GAAO**: constraints + intention descriptors
+        - Intentions
+          - **BDI**: commitment stack
+          - **GAAO**: active constraint set over time windows
+        - Planning
+          - **BDI**: plan library + intention filter
+          - **GAAO**: Adaptive Reasoning Engine using constraints + semantic topology
+        - Learning
+          - **BDI**: limited / implementation-specific
+          - **GAAO**: drift signals + trajectories + recursive adjustment
+        - Semantics
+          - **BDI**: symbolic space
+          - **GAAO**: Semantic Topology with containers
+        - Conditions
+          - **BDI**: minimal context modelling
+          - **GAAO**: rich Condition Space (dimensions + models)
+        - Deviations
+          - **BDI**: not explicit
+          - **GAAO**: delta operator + drift signals as first-class objects
+      - **Interpretation**:
+        - BDI captures a subset of GAAO’s concerns, primarily around goal/commitment management and deliberative planning.
+        - GAAO additionally formalises evidential truth, semantics, constraints, conditions, and adaptive loops.
+    - **3.2 ACT-R**
+      - **ACT-R** is a cognitive architecture focused on simulating human cognition via production rules and multiple memory systems.
+      - **Dimensional comparison (ACT-R vs GAAO):**
+        - Time
+          - **ACT-R**: implicit in production cycles
+          - **GAAO**: explicit temporal domain T
+        - Action unit
+          - **ACT-R**: production firing
+          - **GAAO**: structured Event in the Event Ledger
+        - Memory
+          - **ACT-R**: buffers + declarative/procedural stores
+          - **GAAO**: Evidential Graph + Transformation Layer
+        - Adaptation
+          - **ACT-R**: primarily latency / retrieval tuning
+          - **GAAO**: full Recursive Adaptation Loop across constraints, containers, and conditions
+        - Semantics
+          - **ACT-R**: symbolic chunks
+          - **GAAO**: Semantic Topology with formal container hierarchy
+        - Constraints
+          - **ACT-R**: encoded inside production rules
+          - **GAAO**: explicit Constraint Fabric with evaluation functions
+        - Conditions
+          - **ACT-R**: limited environment modelling
+          - **GAAO**: Condition Space with Condition Models
+      - **Interpretation**:
+        - ACT-R provides a rich internal cognitive model but does not aim to be a general event-sourced, constraint-governed adaptive architecture in the way GAAO does.
+    - **3.3 Reinforcement Learning (RL)**
+      - **RL formalism:**
+        - state space
+        - action space
+        - reward function
+        - policy and value functions
+      - **Dimensional comparison (RL vs GAAO):**
+        - Objective
+          - **RL**: maximise expected cumulative reward
+          - **GAAO**: maintain constraint alignment and adapt behaviour over time
+        - State
+          - **RL**: Markov state vector
+          - **GAAO**: condition profile + container state vectors
+        - Action
+          - **RL**: atomic actions
+          - **GAAO**: structured Events with rich metadata
+        - Reward / outcome
+          - **RL**: scalar reward
+          - **GAAO**: multi-signal Outcomes + Progress + Delta
+        - Learning loop
+          - **RL**: policy / value updates
+          - **GAAO**: multi-layer Recursive Adaptation Loop
+        - Semantics
+          - **RL**: none or ad hoc
+          - **GAAO**: formal Semantic Topology
+        - Constraints
+          - **RL**: typically enforced externally or via reward shaping
+          - **GAAO**: intrinsic Constraint Fabric
+        - Evidence
+          - **RL**: not event-sourced as ontology
+          - **GAAO**: Evidential Graph as core truth engine
+      - **Interpretation**:
+        - RL provides a powerful optimisation mechanism under uncertainty; GAAO defines a more general architecture for constraint-governed, semantically structured, evidence-driven adaptation.
+    - **3.4 MAPE-K (Monitor–Analyze–Plan–Execute over Knowledge)**
+      - Used in self-adaptive / autonomic systems.
+      - **Mapping (MAPE-K role → GAAO component):**
+        - Monitor → Event Ledger + Evidential Graph
+        - Analyze → interpretation via Adaptive Reasoning + Condition Space
+        - Plan → planning operator **I_plan**
+        - Execute → event generation / application of plans
+        - Knowledge → Semantic Topology + Condition Space + Evidence
+      - **Interpretation:**
+        - MAPE-K provides a high-level loop structure. GAAO makes each leg granular and formally defined (events, constraints, conditions, semantics, deltas, trajectories).
+    - **3.5 Event-Sourced Architectures**
+      - Event-sourced systems:
+        - store events as canonical truth
+        - reconstruct state from event streams
+      - GAAO shares this event-sourcing spine but adds:
+        - Semantic Topology
+        - explicit Constraint Fabric
+        - Condition Space
+        - multi-scale Transformation Layer
+        - Adaptive Reasoning Engine
+        - Recursive Adaptation Loop
+      - **Interpretation**:
+        - Event sourcing provides a backbone; GAAO is a conceptual extension into a full agent ontology.
+  - **4. SYNTHESIS OF UNIQUENESS**
+    - Here we gather the structural differences without over-claiming.
+    - **4.1 Cross-Domain Integration**  
+      - To our knowledge, GAAO is distinctive in how it integrates:   
+        - **Temporal Event Sourcing** (Event Ledger)    
+        - **Hierarchical Semantic Structure** (Semantic Topology)    
+        - **Formal Constraint Algebra** (Constraint Fabric)    
+        - **Condition Space Modelling** (dimensions + models)    
+        - **Evidential Truth Engine** (Evidential Graph with deltas, drift, trajectories)    
+        - **Multi-Scale Transformation Modelling** (Progress + Outcomes)    
+        - **Adaptive Reasoning** (planning, interpretation, simulation, adjustment)    
+        - **Recursive Adaptation Loop** spanning multiple timescales    
+      - Many existing architectures implement parts of this list.  
+      - GAAO’s contribution is the unified ontology spanning all of them.
+    - **4.2 Delta and Drift as First-Class Constructs**  
+      - GAAO treats both:  
+        - **Delta**: δ = f(π, α)  
+        - **Drift Signals**: ϕ   
+      - as explicit ontological entities, tightly coupled with constraints, containers, and trajectories.  
+      - This provides a principled way to reason about misalignment between intended and actual behaviour across time.
+    - **4.3 Semantics + Evidence + Constraints Co-Defined**  
+      - GAAO co-defines:  
+        - where things happen (Semantic Containers)  
+        - what is supposed to happen (Constraints)  
+        - what actually happens (Events / Evidence)  
+        - what changes (Transformation Layer)  
+        - under what conditions it happens (Condition Space)  
+        - how that is interpreted and adjusted (Adaptive Reasoning + 𝓛)   
+      - This tight coupling of semantic structure, evidence, and constraints is not typically present in traditional agent or control architectures.
+    - **4.4 Positioning Statement**  
+      - A cautious but accurate way to state it in a paper might be:  
+        - To our knowledge, GAAO offers a novel integration of:  
+          - event-sourced behaviour  
+          - hierarchical semantic structure  
+          - constraint governance  
+          - condition-space modelling  
+          - evidential reasoning  
+          - multi-scale adaptation   
+      - within a single agent ontology.  
+      - Existing frameworks such as BDI, ACT-R, RL, MAPE-K, and event-sourced system designs each address subsets of these concerns.  
+      - GAAO is intended as a unifying architecture that can host and interoperate with those approaches while providing an explicit temporal–semantic–constraint–evidential backbone.
+  - **SYMBOL REFERENCE**
+    - **T** — time domain
+    - **𝒯** — container-type set
+    - **℘(K)** — power set of constraints
+    - **𝒯_r** — trajectory extraction operator
+    - **Φ** — pattern space
+    - **Ψ** — deviation-classification space
+    - **L** — loop schema
+    - **𝓛** — state-transition operator
+  -
+  -
+  -
+  -
+  -
