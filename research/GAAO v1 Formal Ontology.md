@@ -1,0 +1,151 @@
+Canon – Formal Ontology (GAAO v1.0) - Robert Swaab
+=====
+  - 1. Purpose and Scope
+    - This document defines the foundational mathematical ontology of the General Adaptive Agent Ontology (GAAO).
+    - It introduces the primitive sets, structures, operators, and invariants that constitute a valid GAAO-compliant agent.
+    - All other canonical layers refine or extend the structures defined here.
+    - The ontology is fully aligned with:
+      - the formal System Spec (GAAO v1.0) developed by Robert Swaab, and
+      - the GAAO 1.0 preprint
+  - 2. Core Agent Definition
+    - A General Adaptive Agent is defined as the tuple:
+      - **A = (E, C, K, X, R, P, Ω, I, L)**
+    - where each component represents a distinct ontological layer.
+    - No agent is valid unless all components satisfy the structural and semantic constraints defined in this and subsequent canonical documents.
+    - 2.1 Primitive Layers
+      - **E** — Event Ledger Layer
+      - **C** — Semantic Topology Layer
+      - **K** — Constraint Fabric
+      - **X** — Condition Space Layer
+      - **R** — Evidential Graph Layer
+      - **P**, **Ω** — Transformation Layer (Progress and Outcome Records)
+      - **I** — Adaptive Reasoning Engine
+      - **L** — Recursive Adaptation Loop schema
+      - Each layer is treated as a first-class mathematical structure with its own internal invariants and cross-layer interface rules.
+  - 3. Primitive Sets
+    - The ontology relies on the following fundamental sets:
+      - **T** — time domain
+      - **A** — attribute space
+      - **M** — engagement-mode set
+      - **C** — semantic container set (containers in the Semantic Topology)
+      - **𝒯** — container-type set
+      - **K** — constraint set
+      - **X_d** — condition dimensions
+      - **X_m** — condition models
+      - **X = X_d ∪ X_m** — full condition space
+      - **R** — evidence records
+      - **P** — progress records
+      - **Ω** — outcome records
+      - **D** — deviation space
+      - **Λ** — metric space
+      - **Φ** — pattern space (e.g. drift and trajectory patterns)
+      - **Ψ** — deviation-classification space
+    - These sets must remain abstract at the ontological level;
+      - concrete instantiations occur only within derived instance projects.
+  - 4. Structural Interfaces
+    - Each layer interacts with others through typed relationships and operators.
+    - The following relationships must hold in all valid GAAO agents:
+      - **Events reference containers and conditions:**
+        - Every event _e_ contains a container reference λ_c ∈ C and a condition snapshot σ ∈ X.
+      - **Constraints bind to containers and evaluate against events and conditions:**
+        - Each constraint includes a set of bound containers and an evaluation function over (E, X, C).
+      - **Condition models evolve over evidence:**
+        - Condition updates are governed by operators consuming evidence records R, via model-update functions of the form:
+          - update_M : (X, R) → X
+          - update_X : (X, R) → X
+        - Here **update_M** denotes model-level updates (e.g. adjusting condition models X_m),
+          - while **update_X** denotes profile-level updates (e.g. updating the active condition profile X_t);
+          - both are treated as canonical operators at the ontology level.
+      - **Evidential structures derive delta, drift, and trajectory signals from evidence.**
+        - A delta operator computes deviation:
+          - **f_δ : (π, α) → D**
+        - Drift and trajectory extraction operators map evidence to higher-order patterns:
+          - **Drift : R → {ϕ₁,…,ϕₙ}**
+          - **𝒯_r : R → {τ₁,…,τ_m}**
+        - These operators are the only canonical sources of δ, ϕ, and τ in the ontology.
+      - **The Adaptive Reasoning Engine consumes all core layers:**
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ}.
+        - At the ontological level:
+          - **Π** is the abstract space of plan proposals,
+          - **Δ** is the abstract space of adjustment directives,
+          - **S** is the abstract space of simulations,
+          - **Υ** is the abstract space of interpretive summaries.
+        - **I** is not a single primitive function but a family of sub-operators including:
+          - I_int(R, X) → Υ,
+          - I_pat(R) → Φ,
+          - I_Δ : D → Ψ,
+          - I_plan(K, X, C) → Π,
+          - I_adj(K, C, X, R) → Δ,
+          - I_sim(state, window) → S,
+          - whose collective behaviour is summarised by the type above.
+        - These codomains are treated as abstract carrier sets; their internal structure is left to derived instance projects.
+      - **The Recursive Loop produces temporal evolution:**
+        - The loop schema L induces a state transition operator 𝓛 such that:
+          - **stateₜ₊₁ = 𝓛(stateₜ)**
+  - 5. Agent State
+    - At time t, the operational state of the agent is:
+      - **stateₜ = (Kₜ, Cₜ, Xₜ, Eₜ, Rₜ)**
+    - The state update rule is:
+      - **stateₜ₊₁ = 𝓛(stateₜ)**
+    - The ontology makes no assumptions about determinism or convergence;
+      - these are properties of specific instantiations of **L** and 𝓛.
+    - Progress **P** and outcomes **Ω** are derived from (E, C, R) under the loop **L**, in accordance with the Transformation Layer definitions.
+  - 6. Well-Formedness Conditions
+    - A GAAO-compliant agent must satisfy the following invariants:
+    - 6.1 Temporal Integrity
+      - Events must satisfy t_s ≤ t_e, with t_s, t_e ∈ T.
+      - The event ledger must remain temporally coherent as a sequence of events over **T**.
+    - 6.2 Topological Integrity
+      - The semantic container graph must be a rooted tree:
+        - **G = (C, parent)** with **parent : C → C ∪ {∅}**.
+      - Cycles are forbidden; each container has at most one parent; there is exactly one root.
+    - 6.3 Constraint Coherence
+      - Constraint activation windows must reference valid time intervals:
+        - **W ⊆ T** for every constraint **k ∈ K**.
+      - Constraint evaluation functions must return codomain-valid values:
+        - **γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated}**.
+    - 6.4 Condition Coherence
+      - Each condition dimension must include:
+        - type, timestamp, confidence, and source.
+      - Condition models must:
+        - consume well-typed inputs,
+        - return valid members of **X**, and
+        - maintain explicit versioning and confidence.
+    - 6.5 Evidential Consistency
+      - Every delta, drift, or trajectory signal must derive from valid evidence records via the canonical operators.
+      - Evidence records must maintain referential integrity to events, containers, and constraints.
+    - 6.6 Reasoning Validity
+      - Reasoning operators in **I** must return well-typed outputs in {Π, Δ, S, Υ}.
+        - No operator may violate temporal or topological invariants:
+          - all outputs must preserve the constraints of Sections 6.1 and 6.2.
+  - 7. Cross-Layer Coherence Requirements
+    - These constraints ensure the ontology functions as a unified system:
+      - **Event–Evidence Coherence:**
+        - All evidence records must map to at least one event in **E**.
+      - **Evidence–Transformation Coherence:**
+        - Progress **P** and outcomes **Ω** must reference valid evidence records **R** and containers **C**.
+      - **Constraint–Container Coherence:**
+        - Constraints may bind only to existing containers:
+          - for each **k ∈ K**, its bound container set **L_c ⊆ C**.
+      - **Reasoning–Loop Coherence:**
+        - The recursive loop **L** and induced operator **𝓛** must consume operator outputs from **I** without violating types or invariants.
+        - Planning, adjustment, and simulation outputs must be realisable as events and updates within the existing semantic topology and constraint fabric.
+  - 8. Ontological Identity Constraints
+    - To preserve consistency across versions:
+      - No layer may change its fundamental role without canonical revision to the ontology version.
+      - All derived systems must map injectively into the structures defined here:
+        - instance-level schemas must embed into (E, C, K, X, R, P, Ω, I, L) without redefining primitive sets or operators.
+      - Instance projects may not redefine any primitive set or canonical operator in this ontology:
+        - they may only specialise, parameterise, or extend in ways that respect the invariants and coherence constraints.
+  - 9. Versioning
+    - This document defines **GAAO Formal Ontology v1.0**.
+    - All changes must:
+      - be tracked in the Build Log,
+      - follow the modification protocol,
+      - increment the ontology version accordingly.
+    - Any change that alters:
+      - the tuple structure,
+      - the primitive sets,
+      - the roles of the layers,
+      - or the core invariants,
+      - constitutes a new major ontology version.

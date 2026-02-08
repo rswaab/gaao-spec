@@ -1,0 +1,180 @@
+Canon – Adaptive Reasoning & Recursive Loop (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Adaptive Reasoning & Recursive Loop Layer (**I, L**) of the General Adaptive Agent Ontology (GAAO) specifies:
+      - the adaptive reasoning engine **I : (X, E, K, C, R) → {Π, Δ, S, Υ}**,
+      - its sub-operators over patterns, deviations, constraints, and simulations,
+      - the loop schema **L = {Plan → Execute → Log → Interpret → Adjust}**,
+      - and the induced state-transition operator **𝓛** over agent state.
+    - This document:
+      - fixes the ontological status and typing of **I**, its codomains, and sub-operators,
+      - defines the recursive adaptation loop **L** and the state evolution operator **𝓛**,
+      - states internal invariants that must hold for reasoning and loop operations,
+      - constrains how **I** and **L** may interact with other layers of the agent tuple
+        - A = (E, C, K, X, R, P, Ω, I, L),
+      - and formalises cross-layer coherence conditions involving reasoning, evidence, constraints, and state updates.
+    - All definitions specialise the primitives in the GAAO v1.0 System Spec, Formal Ontology, and preprint; no primitive set or canonical operator is redefined.
+  - 2. Adaptive Reasoning and Loop Structures
+    - 2.1 Primitive sets and references
+      - This layer relies on the primitive sets and structures:
+        - **X** — condition space,
+        - **E** — event ledger,
+        - **K** — constraint set,
+        - **C** — semantic containers,
+        - **R** — evidence records,
+        - **P, Ω** — transformation-layer records (progress and outcomes),
+        - **D** — deviation space,
+        - **Φ** — pattern space (drift and trajectory patterns),
+        - **Ψ** — deviation-classification space,
+        - **T** — time domain,
+        - **state_t = (K_t, C_t, X_t, E_t, R_t)** — operational state at time t, as defined in the Formal Ontology canon.
+      - Reasoning and loop primitives:
+        - **I : (X, E, K, C, R) → {Π, Δ, S, Υ}**,
+        - **L = {Plan → Execute → Log → Interpret → Adjust}**,
+        - **𝓛 : (K × C × X × E × R) → (K × C × X × E × R)** with
+          - state_{t+1} = 𝓛(state_t).
+      - Sub-operators of **I**:
+        - **I_int(R, X) → Υ** (interpretation),
+        - **I_pat(R) → Φ** (pattern extraction),
+        - **I_Δ : D → Ψ** (deviation classification),
+        - **I_plan(K, X, C) → Π** (planning),
+        - **I_adj(K, C, X, R) → Δ** (adjustment),
+        - **I_sim(state, window) → S** (simulation).
+          -  where **state ∈ ValidState ⊆ (K × C × X × E × R)** is an operational state_t as defined in the Formal Ontology canon.
+    - 2.2 Adaptive Reasoning Operator I
+      - The Adaptive Reasoning Engine is the tuple of operators collectively denoted **I** with canonical summary type:
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ}.
+      - At the ontology level:
+        - **Π** is the set of plan proposals,
+        - **Δ** is the set of adjustment directives,
+        - **S** is the set of simulations,
+        - **Υ** is the set of interpretive summaries,
+        - all four codomain components are abstract carrier sets; their internal structure is left to derived instance projects.
+      - **I** is not a single primitive function but a family of related operators with fixed domain/codomain relationships as given above; all such operators must respect the typing and invariants of the layers they consume.
+    - 2.3 Sub-operators of I
+      - The sub-operators specialise **I** as follows:
+        - **Interpretation**
+          - I_int : (R, X) → Υ
+            - consumes evidence and conditions to produce interpretive summaries.
+        - **Pattern extraction**
+          - I_pat : R → Φ
+            - consumes evidence records to extract pattern structures in Φ (e.g. drift and trajectory patterns).
+        - **Deviation classification**
+          - I_Δ : D → Ψ
+            - classifies deviation signals from the deviation space D into deviation-classification space Ψ.
+        - **Planning**
+          - I_plan : (K, X, C) → Π
+            - maps constraints, current conditions, and semantic topology into plan proposals Π.
+        - **Adjustment**
+          - I_adj : (K, C, X, R) → Δ
+            - returns adjustment directives based on constraints, containers, conditions, and evidence, to be realised via subsequent events and updates.
+        - **Simulation**
+          - I_sim : (state, window) → S
+            - simulates hypothetical evolutions of agent state over an abstract window parameter; the formal ontology leaves the window’s carrier set unspecified.
+      - The ontology constrains these operators only at the level of domains, codomains, and invariants; specific algorithms are outside the canonical scope.
+    - 2.4 Recursive Loop schema L
+      - The Recursive Adaptation Loop is given as a schema:
+        - L = {Plan → Execute → Log → Interpret → Adjust}.
+      - This identifies five abstract stages:
+        - **Plan** — uses I_plan (and possibly I_sim) over the current state,
+        - **Execute** — realises selected plans as events in **E**,
+        - **Log** — records events and associated transformations into **E** and **R** (and thereby P, Ω),
+        - **Interpret** — uses I_int and I_pat to update interpretations of behaviour and conditions,
+        - **Adjust** — uses I_adj and I_Δ (applied to D via R and E) to generate adjustments that influence subsequent planning and constraint/structure update.
+      - The schema **L** is not itself an operator; it is the structural pattern from which the state-transition operator 𝓛 is induced.
+    - 2.5 State-transition operator 𝓛
+      - The Formal Ontology and System Spec define:
+        - state_t = (K_t, C_t, X_t, E_t, R_t),
+        - state_{t+1} = 𝓛(state_t).
+      - At the ontology level:
+        - **Dom(𝓛)** is the set of well-formed states whose components satisfy all internal layer invariants (Event Ledger, Semantic Topology, Constraint Fabric, Condition Space, Evidential Graph).
+        - **Cod(𝓛)** is the same set; 𝓛 is closed over valid agent states.
+        - **𝓛** is induced by composing the stages of **L** together with the layer-specific updates they entail (e.g. appending events to E, evidence to R, evolving K, C, X), but no specific composition law is fixed by the ontology.
+      - The ontology explicitly refrains from assuming determinism, convergence, or stability properties of 𝓛; those are properties of particular instantiations of the loop.
+  - 3. Internal Invariants of Adaptive Reasoning & Loop
+    - 3.1 Typing and well-formedness of reasoning outputs
+      - For a GAAO-compliant agent, the following must hold for all applications of **I** and its sub-operators:
+        - **1. Well-typed inputs**
+          - Operators I_int, I_pat, I_Δ, I_plan, I_adj, I_sim may only be evaluated on tuples whose components satisfy their respective layer invariants (e.g. X_t is a valid condition profile, E_t a valid ledger, C_t a valid rooted-tree topology, K_t a valid constraint set, R_t a valid evidential graph).
+        - **2. Well-typed outputs**
+          - All outputs of I and its sub-operators must lie in the codomain spaces {Π, Δ, S, Υ, Φ, Ψ} as specified in the System Spec and Formal Ontology.
+        - **3. Invariant preservation (local)**
+          - No operator in I may directly modify E, C, K, X, or R in a manner that violates their canonical invariants; reasoning outputs are proposals, interpretations, or simulations that must be realised via 𝓛 and layer-specific update mechanisms (e.g. condition updates, constraint adjustments, event appends).
+      - These clauses refine the “Reasoning Validity” requirement in the Formal Ontology.
+    - 3.2 Loop closure over valid states
+      - Define **ValidState ⊆ K × C × X × E × R** as the set of tuples in which each component satisfies its layer’s internal invariants (as defined in the corresponding canonical layer documents).
+      - The Recursive Loop must satisfy:
+        - **Closure:**
+          - For all state_t ∈ ValidState, 𝓛(state_t) ∈ ValidState.
+        - **Type preservation:**
+          - 𝓛 does not change the type of any component; it only changes their values while maintaining internal and cross-layer invariants given in the Formal Ontology (temporal integrity of E, tree structure of C, constraint coherence of K, condition coherence of X, evidential consistency of R).
+    - 3.3 Event- and evidence-sourcing constraints
+      - Because GAAO is event-sourced, the loop must respect event and evidence immutability:
+        - **1. Event immutability**
+          - The identity and coordinates of each e ∈ E (including its timestamps and container binding) are immutable once the event is in the ledger; 𝓛 may only add new events, never alter existing ones.
+        - **2. Evidence immutability**
+          - Evidence records r ∈ R are similarly append-only; revisions or retractions must be represented as new evidence records referencing prior ones through the evidential graph, not by mutating or deleting the originals.
+        - **3. Consistency of induced histories**
+          - Because container, constraint, and evidential histories (H_e, H_ω, H_p, H_ϕ, H_k) are derived from E, Ω, P, R, and K, 𝓛 must ensure all changes to these derived histories arise from appending events, evidence, and adjustments, not from rewriting prior history.
+    - 3.4 Reasoning–Loop coherence
+      - The Formal Ontology imposes Reasoning–Loop Coherence: the recursive loop L and 𝓛 must consume outputs from I without violating types or invariants; planning, adjustment, and simulation outputs must be realisable as events and updates within the existing semantic topology and constraint fabric.
+      - Specialised:
+        - **1. Realisation requirement**
+          - For any plan π̂ ∈ Π selected for execution at time t, there exists a sequence of future states such that the corresponding events E_{>t} realise π̂ without violating layer invariants.
+        - **2. Adjustment realizability**
+          - For any adjustment Δ̂ ∈ Δ produced by I_adj at time t, there exists an embedding of Δ̂ into updates of K, C, X (and indirectly E, R) under 𝓛 such that all layer invariants and cross-layer coherence constraints remain valid.
+        - **3. Simulation compatibility**
+          - Simulations S produced by I_sim(state_t, window) must be interpretable as hypothetical evolutions under some admissible extension of 𝓛; they must not rely on illegal operations on E, C, K, X, R.
+    - 3.5 Convergence, divergence, and failure modes (ontological stance)
+      - The Formal Ontology explicitly notes that the ontology makes no assumptions about determinism or convergence; such properties belong to specific instantiations of L and 𝓛.
+      - At the canonical level, we therefore require only:
+        - **Finite-step safety:** for all finite n and any initial state_0 ∈ ValidState, the iterates state_n = 𝓛ⁿ(state_0) remain in ValidState (no invariant violation in finite time);
+        - **Behaviour classification:** terms like “convergence”, “oscillation”, or “divergence” are definitional labels that may be imposed by instance projects to categorise patterns of state_t produced by 𝓛; no specific such property is required or forbidden by the ontology.
+      - A **failure mode** at the ontology level is defined as:
+        - an attempted application of 𝓛 or any operator in I that would map a valid state to an invalid one (breaking layer invariants or cross-layer coherence).
+        - A GAAO-compliant implementation must ensure such transitions are not realised; they may instead produce instance-level error mechanisms, which are outside canonical scope.
+  - 4. Interfaces and Cross-Layer Coherence
+    - 4.1 Interface with Event Ledger E
+      - Planning outputs Π and simulation outputs S, when selected, are realised as one or more events e ∈ E during the Execute stage of L.
+      - Interpretive outputs Υ and deviation classifications Ψ are derived (via I_int, I_pat, I_Δ) from R and D, but may influence which events are planned and executed in subsequent iterations.
+      - The Event Ledger invariants (temporal ordering, container binding, applicable constraints) must hold for all events generated under the influence of I.
+    - 4.2 Interface with Semantic Topology C
+      - I_plan(K, X, C) → Π consumes C, including its rooted-tree topology G = (C, parent), to produce plans compatible with container structure.
+      - I_adj(K, C, X, R) → Δ may propose modifications to constraints or container linkage (where permitted by instance projects); any such modifications realised via 𝓛 must preserve rooted-tree invariants (no cycles, unique parent, single root).
+      - Container histories H_e, H_ω, H_p, H_ϕ remain derived from E, Ω, P, R; I and 𝓛 must not directly alter these histories except by legal updates to their underlying sets.
+    - 4.3 Interface with Constraint Fabric K
+      - Constraints are tuples k = (id, ι, θ, μ, W, L_c, γ, H_k) with evaluation functions
+        - γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated}.
+      - I_plan and I_adj use K as input; they must treat constraint definitions (ι, θ, μ, W, L_c, γ) as read-only and may only propose adjustment records captured in Δ that will be realised as updates to K via 𝓛 and logged in H_k.
+      - Any adjusted constraint k' ∈ K_{t+1} must still satisfy the canonical constraint invariants (well-typed W, L_c ⊆ C, γ_k codomain).
+    - 4.4 Interface with Condition Space X
+      - I_int(R, X) → Υ uses X jointly with evidence to produce interpretations; it must assume X satisfies the Condition Space invariants (well-formed condition dimensions and models, coherent profiles X_t).
+      - I_plan(K, X, C) → Π and I_adj(K, C, X, R) → Δ both depend on X to assess feasibility and context for plans and adjustments.
+      - Condition updates are governed by update_M, update_X : (X, R) → X; 𝓛 must ensure that any use of Δ to influence X is expressible as compositions of these canonical update operators, preserving the Condition Space invariants.
+    - 4.5 Interface with Evidential Graph R
+      - I_int and I_pat consume R directly; I_adj consumes R alongside K, C, X.
+      - Drift and trajectory operators Drift : R → {ϕ₁,…} and 𝒯_r : R → {τ₁,…} are the canonical producers of the drift and trajectory patterns that populate Φ; I_pat(R) → Φ must be compatible with these operators (e.g. by reusing or aggregating their outputs).
+      - The Log stage within L must ensure that all new progress and outcome information used by I is present in R as evidence records with appropriate types; P and Ω are derived from (E, C, R) under L.
+    - 4.6 Interface with Transformation Layer (P, Ω)
+      - The Transformation Layer is not a direct argument to I but influences reasoning indirectly via E and R:
+        - outcomes ω ∈ Ω are embedded in events e ∈ E,
+        - progress and outcome evidence is stored in R as ProgressEvidence and OutcomeEvidence records.
+      - Interpretive summaries Υ and patterns Φ may depend on P and Ω as seen through R; however, P and Ω themselves remain derived objects and are not modified directly by I or 𝓛 except by changing (E, C, R) in a way consistent with their canonical definitions.
+    - 4.7 Interface with P, Ω, I, L in the global tuple
+      - Within the global agent tuple A = (E, C, K, X, R, P, Ω, I, L), the Adaptive Reasoning & Recursive Loop Layer is characterised by:
+        - consuming the current state (K_t, C_t, X_t, E_t, R_t) via I and L,
+        - producing new events, evidence, and structural adjustments through 𝓛,
+        - leaving the ontological role of other layers intact (no redefinition of their primitives or operators),
+        - ensuring that all outputs are realisable as updates preserving the invariants of the other canonical layers.
+  - 5. Ontological Status and Specialisation
+    - **I** (Adaptive Reasoning Engine) and **L** (Recursive Adaptation Loop) are primitive components of the GAAO tuple A and may not be removed or replaced without constituting a new ontology version.
+    - This document fixes the canonical structure and invariants of the Adaptive Reasoning & Recursive Loop Layer for GAAO Formal Ontology v1.0.
+    - Instance projects may specialise this layer only by:
+      - refining the internal structure of Π, Δ, S, Υ, Φ, Ψ,
+      - defining concrete algorithms that implement I_int, I_pat, I_Δ, I_plan, I_adj, I_sim and the induced 𝓛,
+      - specifying domain-specific criteria for convergence, divergence, or stability,
+    - subject to the constraints that:
+      - all operators respect the domains, codomains, and invariants defined here and in the other canonical layer documents,
+      - no primitive sets or canonical operators (I, L, 𝓛, f_δ, Drift, 𝒯_r, update_M, update_X, γ_k) are redefined, only specialised,
+      - Reasoning–Loop Coherence and closure over ValidState continue to hold for the specialised 𝓛.
+    - Under these constraints, the Adaptive Reasoning & Recursive Loop Layer provides the canonical mechanism by which a GAAO-compliant agent interprets its history, plans, simulates, and adjusts its behaviour across time, while preserving the structural guarantees of the ontology.

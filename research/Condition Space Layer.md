@@ -1,0 +1,201 @@
+Canon – Condition Space Layer (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Condition Space Layer **X** of the General Adaptive Agent Ontology (GAAO) specifies:
+      - the set of condition dimensions **X_d**,
+      - the set of condition models **X_m**,
+      - the full condition space **X = X_d ∪ X_m**,
+      - and the condition profile **X_t ⊆ X** that characterises contextual state at time t.
+    - This document:
+      - fixes the internal structure of condition dimensions and condition models,
+      - defines the condition profile and its relationship to events and state,
+      - characterises contextual signals, persistence and decay parameters at the ontological level,
+      - states the dynamics of X via abstract update operators,
+      - and formalises interfaces between **X** and the layers **E, C, K, R, P, Ω, I, L** of the agent tuple
+        - A = (E, C, K, X, R, P, Ω, I, L).
+    - All definitions specialise the global primitives and structures already defined in the GAAO v1.0 System Spec, Formal Ontology, and Preprint; no primitive set or operator is redefined.
+  - 2. Condition Space Structure
+    - 2.1 Primitive sets and references
+      - This layer relies on the primitive sets and structures:
+        - T — time domain,
+        - X_d — condition dimensions,
+        - X_m — condition models,
+        - X = X_d ∪ X_m — condition space,
+        - R — evidence records,
+        - E — events,
+        - C — semantic containers,
+        - K — constraints.
+        - M — engagement-mode set,
+        - A — attribute space,
+        - Ω — outcome records,
+        - D — deviation space.
+      - Events inhabit:
+        - E ⊆ T × T × C × M × A × A × X × Ω × D × 𝒫(K),
+      - and contain a condition snapshot σ ∈ X.
+      - The condition profile at time t is:
+        - X_t ⊆ X.
+      - At the ontological level, **X_d** and **X_m** are primitive sets; profiles X_t are derived selections over X and do not introduce new primitive sets.
+    - 2.2 Condition dimensions (atomic contextual signals)
+      - A **condition dimension** is a record:
+        - ξ = (name, type, value, t, source, conf, exp) ∈ X_d
+      - where, at the ontological level:
+        - name — identifier for the dimension,
+        - type — dimension type marker,
+        - value — current value of the signal,
+        - t ∈ T — timestamp at which the value is asserted,
+        - source — reference to the provenance of the signal (evidence, model, external feed, etc.),
+        - conf — confidence indicator for the value,
+        - exp — parameter governing persistence / decay semantics for this dimension.
+      - The ontology does not fix the internal form or codomain of type, value, source, conf, or exp; it only requires that they are well-typed within a given instance and that exp is available to express persistence or expiry behaviour (Section 4.3).
+    - 2.3 Condition models
+      - A **condition model** is a record:
+        - M = (name, type, inputs, rules, update, confidence, version) ∈ X_m
+      - where:
+        - name — identifier for the model,
+        - type — model type marker,
+        - inputs ⊆ X_d — set of condition dimensions used as inputs,
+        - rules — interpretive logic relating inputs to derived condition structures,
+        - update : (X, R) → X — model-level update function,
+        - confidence — model-level confidence indicator,
+        - version — revision identifier.
+      - Condition models provide structured interpretations and derived signals over X_d; they are first-class elements of X via X_m.
+    - 2.4 Condition space and profiles
+      - The **condition space** is:
+        - X = X_d ∪ X_m.
+      - The **condition profile** at time t is a subset:
+        - X_t ⊆ X,
+      - collecting those condition dimensions and models that are considered active or relevant at time t.
+      - The ontology does not fix how X_t is constructed; it is constrained only by the invariants in Section 3 and the dynamics in Section 4.
+  - 3. Internal Invariants of the Condition Space
+    - 3.1 Well-formedness of condition dimensions
+      - For each ξ = (name, type, value, t, source, conf, exp) ∈ X_d, a GAAO-compliant agent must satisfy:
+        - **1. Typing constraints**
+          - t ∈ T,
+          - source is a valid provenance reference (e.g. to R, external feeds, or internal models),
+          - conf and exp are well-typed within the instance’s chosen representation.
+        - **2. Identity and naming**
+          - name distinguishes the dimension within some instance-specific naming scheme; the ontology does not require global uniqueness, but any dimension referenced by other structures (e.g. inputs in a model) must be identifiable.
+        - **3. Temporal anchoring**
+          - t denotes the time at which value is asserted; persistence or expiry relative to exp is handled by the dynamics (Section 4) and does not alter the typing of ξ.
+    - 3.2 Well-formedness of condition models
+      - For each M = (name, type, inputs, rules, update, confidence, version) ∈ X_m:
+        - **1. Typing constraints**
+          - inputs ⊆ X_d,
+          - update : (X, R) → X is a total function over the condition space and evidence,
+          - rules and confidence are well-typed internal structures (left abstract).
+        - **2. Input coherence**
+          - every dimension in inputs must belong to X_d,
+          - references from rules to condition dimensions or models must be resolvable within X.
+        - **3. Version discipline**
+          - version distinguishes successive revisions of the same logical model; the ontology does not prescribe a versioning scheme, but requires that versions be comparable so that model evolution can be tracked in evidence or meta-structures if needed.
+    - 3.3 Condition profile coherence
+      - For each t ∈ T, the condition profile X_t ⊆ X must satisfy:
+        - all ξ ∈ X_t ∩ X_d respect their temporal anchoring t(ξ) and persistence semantics (Section 4.3),
+        - all M ∈ X_t ∩ X_m are well-formed and, if active, their inputs are either present in X_t or resolvable in X_d,
+        - X_t is compatible with the current operational state
+          - state_t = (K_t, C_t, X_t, E_t, R_t).
+      - The ontology leaves the exact criteria of “active” to instance projects, as long as these criteria are expressible in terms of t, exp, and the update operators.
+    - 3.4 Compatibility with events
+      - Each event is of the form:
+        - e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ) ∈ E
+      - with σ ∈ X.
+      - Condition–event coherence requires:
+        - for each event e, there exists a time t ∈ [t_s, t_e] such that σ ∈ X_t,
+        - any dimensions and models referenced inside σ are elements of X and respect the well-formedness conditions above.
+      - Thus, σ acts as a snapshot of the condition profile intersected with the event’s temporal window, without constraining how much of X_t must be included in σ.
+  - 4. Condition Dynamics and Persistence
+    - 4.1 Model-level update operators
+      - Condition models carry an update function:
+        - update_M : (X, R) → X
+      - for M ∈ X_m. At the System Spec level, condition space dynamics are summarised by:
+        - update_M : (X, R) → X for model-level updates,
+        - update_X : (X, R) → X for global condition updates.
+      - Invariants:
+        - both update_M and update_X must preserve the typing of X_d, X_m and maintain X′ = X_d′ ∪ X_m′,
+        - updates must be referentially coherent with evidence R: no updated dimension or model may reference non-existent evidence records,
+        - updates may add, modify, or deactivate elements of X, but must not violate the well-formedness conditions in Section 3.
+    - 4.2 Global condition-update operator
+      - The global operator:
+        - update_X : (X, R) → X
+      - is treated as the abstract mechanism by which the agent’s overall condition space evolves in response to evidence. At the ontology level:
+        - update_X is total on X × R,
+        - the induced evolution of condition profiles X_t is compatible with the recursive loop state evolution
+          - state_{t+1} = 𝓛(state_t),
+        - any derived X_{t+1} must satisfy the coherence conditions of Section 3.3.
+    - 4.3 Persistence and decay behaviour
+      - The exp field in condition dimensions provides a slot for persistence / decay semantics.
+      - At the ontology level:
+        - exp is treated as abstract metadata that influences whether a dimension ξ remains in, or is removed from, future profiles X_t,
+        - update_M and update_X must be able to interpret exp such that, for any dimension, there is a well-defined notion of when it is considered “no longer active” for profile construction,
+        - these semantics must be compatible with the time domain T and not retroactively alter the truth of condition assignments already used in past events or evidence.
+      - The ontology does **not** specify numeric decay laws, thresholds, or explicit expiry operators; these are left to instance projects, constrained only by the requirement that they be implementable as part of update_M / update_X and preserve the invariants of Sections 2 and 3.
+    - 4.4 Induced state-space
+      - In the recursive loop, the operational state at time t is:
+        - state_t = (K_t, C_t, X_t, E_t, R_t), as defined in the Formal Ontology canon.
+      - The Condition Space Layer contributes the component X_t, which—together with container state vectors in C_t—forms the agent’s state-space for comparison with other architectures (e.g. reinforcement learning).
+      - The ontology requires:
+        - state_t must be such that X_t is a valid condition profile,
+        - the state-transition operator 𝓛 must commute with update_X in the sense that condition updates are accounted for in state_{t+1}.
+  - 5. Interfaces and Cross-Layer Coherence
+    - 5.1 Interface with Event Ledger E
+      - Events include the condition snapshot σ ∈ X.
+      - Coherence:
+        - σ must be an element of X consistent with some X_t profile, as in Section 3.4,
+        - condition information used for event interpretation (e.g. via I_int) must be recoverable from X and R without altering the canonical event structure,
+        - any mapping from full profiles X_t to event-level snapshots σ is left abstract but must be well-typed.
+    - 5.2 Interface with Semantic Topology C
+      - The Condition Space does not introduce an explicit primitive map from X to C. Instead:
+        - containers C acquire contextual meaning through the combination of events E (which bind to containers via λ_c and to conditions via σ) and evidence R (which anchors observations to containers),
+        - container state vectors ϛ in the Semantic Topology Layer may be derived from X and R, but such derivations are implementation-level and not part of the canonical definition.
+      - The ontology only requires that any container-level use of condition information be expressible in terms of X, E, and R without contradicting their respective invariants.
+    - 5.3 Interface with Constraint Fabric K
+      - Constraint evaluation functions are:
+        - γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated},  for k ∈ K.
+      - Coherence requirements:
+        - γ_k must be well-typed for any X satisfying Condition Space invariants,
+        - constraints may assume certain structures over X (e.g. particular dimensions or models), but such assumptions must not modify X itself; they are encoded in θ, μ, and γ_k,
+        - the classification of constraints (hard/soft, inhibitory/promotive, computable/non-computable) may depend on properties of X, but those properties are read-only at the ontological level.
+      - Thus, X provides the contextual state against which constraints are evaluated, while K provides the normative structure.
+    - 5.4 Interface with Evidential Graph R
+      - Condition updates draw on evidence via:
+        - update_M : (X, R) → X,
+        - update_X : (X, R) → X.
+      - Evidence records are:
+        - r = (id, type, t, c, k, e, raw, derived, conf, src) ∈ R.
+      - Coherence constraints:
+        - any dimension or model created or updated from evidence must reference its provenance via the source and/or conf fields in ξ or M,
+        - Drift and 𝒯_r operators may identify patterns over R that are then interpreted through condition models, but pattern extraction itself does not alter X directly; only update_M / update_X may do so,
+        - no element of X may reference an evidence record outside R.
+    - 5.5 Interface with Transformation Layer (P, Ω)
+      - Progress and outcomes are derived from (E, C, R) under the loop L:
+        - P — progress records,
+        - Ω — outcome records.
+      - The Condition Space interacts with these via:
+        - condition models may interpret or aggregate progress signals and outcomes as part of their rules or update functions,
+        - constraints and reasoning operators may treat certain regions of X as preconditions or contextual qualifiers for interpreting P and Ω.
+      - The ontology does not add extra structure here; it only requires that such interpretations are expressible using existing fields in P, Ω, X, and R.
+    - 5.6 Interface with Adaptive Reasoning I and Recursive Loop L
+      - The adaptive reasoning engine is:
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ},
+      - with operators:
+        - I_int(R, X) → Υ (interpretation),
+        - I_pat(R) → Φ (pattern extraction),
+        - I_Δ : D → Ψ (deviation classification),
+        - I_plan(K, X, C) → Π (planning),
+        - I_adj(K, C, X, R) → Δ (adjustment),
+        - I_sim(state, window) → S (simulation).
+      - Preconditions:
+        - all uses of X in these operators assume that X satisfies the Condition Space invariants,
+        - state_t passed to I_sim must contain a valid profile X_t,
+        - no operator may silently alter X except through the sanctioned update_X / update_M pathways.
+      - The recursive loop L and state-transition operator 𝓛 evolve X_t as part of state_t; all such evolution must be compatible with the dynamics and invariants described in Sections 3 and 4.
+  - 6. Ontological Status and Versioning
+    - X is a primitive component of the GAAO tuple A = (E, C, K, X, R, P, Ω, I, L).
+    - This document fixes the canonical structure and invariants of the Condition Space Layer for GAAO Formal Ontology v1.0.
+    - Any change that alters:
+      - the structure of condition dimensions ξ or models M,
+      - the definition of X = X_d ∪ X_m or profiles X_t ⊆ X,
+      - the typing or role of update_M, update_X,
+      - or the cross-layer coherence conditions involving X,
+      - constitutes a canonical modification and must follow the GAAO Build Log and versioning protocol.
+    - Under these rules, the Condition Space **X** remains the canonical representation of contextual signals and state-space structure in GAAO, providing the backdrop against which events, constraints, evidence, transformations, and adaptive reasoning are evaluated.

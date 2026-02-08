@@ -1,0 +1,225 @@
+Canon – Event Ledger Layer (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Event Ledger Layer **E** is the temporal backbone of a GAAO-compliant agent, providing an event-sourced account of behaviour over the time domain **T** and anchoring all other layers to concrete occurrences.
+    - This document:
+      - fixes the ontological status of events and the ledger set **E**,
+      - defines temporal and ordering relations on **E**,
+      - specifies session/state-slice semantics and continuity constraints,
+      - states closure and update invariants for the ledger,
+      - and formalises interfaces between **E** and the remaining components of the agent tuple     **A = (E, C, K, X, R, P, Ω, I, L)**.
+    - All definitions specialise the global primitives and structures already defined in the GAAO v1.0 System Spec and Formal Ontology; no primitive set or operator is redefined.
+  - 2. Event Structure
+    - 2.1 Primitive sets
+      - This layer relies on the primitive sets:
+        - **T** — time domain
+        - **A** — attribute space
+        - **M** — engagement mode set
+        - **C** — semantic container set
+        - **X** — condition space
+        - **Ω** — outcome records
+        - **D** — deviation space
+        - **K** — constraint set
+      - These are shared with the global ontology and are not altered here.
+    - 2.2 Event type
+      - An **Event** is the 10-tuple:
+        - e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ)
+      - with typing:
+        - t_s, t_e ∈ T — start and end times
+        - λ_c ∈ C — semantic container identifier
+        - λ_m ∈ M — engagement mode
+        - π, α ∈ A — planned and actual attributes
+        - σ ∈ X — condition snapshot
+        - ω ∈ Ω — outcome record associated to the event
+        - δ ∈ D — deviation signal
+        - κ ⊆ K — set of applicable constraints
+      - The **Event Ledger** is the set of all events:
+        - E = { e₁, e₂, … }.
+      - As a type:
+        - E ⊆ T × T × C × M × A × A × X × Ω × D × 𝒫(K).
+      - No additional coordinates are added to the primitive event type; all further structure is introduced via relations and derived operators over **E**.
+  - 3. Ledger Structure and Derived Relations
+    - 3.1 Temporal interval and instantaneous events
+      - For any event e ∈ E:
+        - define its **time-interval** as
+          - interval(e) := [t_s(e), t_e(e)] ⊆ T,
+        - define an **instantaneous event** as one satisfying t_s(e) = t_e(e).
+      - The Event Ledger allows both extended and instantaneous events; no further restriction is imposed at the ontological level.
+    - 3.2 Temporal precedence relation
+      - Define the **temporal precedence relation** ≺_T ⊆ E × E by:
+        - eᵢ ≺_T eⱼ iff t_e(eᵢ) < t_s(eⱼ).
+      - This relation is:
+        - irreflexive and transitive on **E**,
+        - compatible with the order structure of **T** (when **T** is totally ordered, ≺_T is a strict partial order on events).
+      - Events are allowed to overlap in time; ≺_T does not enforce total comparability.
+    - 3.3 Containment and projection maps
+      - For each coordinate of the event tuple, there is a canonical projection:
+        - t_s, t_e : E → T
+        - λ_c : E → C
+        - λ_m : E → M
+        - π, α : E → A
+        - σ : E → X
+        - ω : E → Ω
+        - δ : E → D
+        - κ : E → 𝒫(K)
+      - These are not new primitives; they are structural projections induced by the definition of **E**.
+    - 3.4 Time-indexed ledger prefixes
+      - For any t ∈ T, define the **ledger prefix** at time t:
+        - E_{≤ t} := { e ∈ E ∣ t_e(e) ≤ t }.
+      - The family {E_{≤ t}}_{t ∈ T} induces a canonical filtration of the ledger over time and will be used in continuity and update invariants below.
+  - 4. Sessions, State-Slices, and Atomicity
+    - This section introduces derived constructs over **E** that formalise how the ledger supports temporal existence and reconstruction of state. These constructs do not modify the tuple definition of **A**.
+    - 4.1 Sessions
+      - A **session** is defined as a non-empty, finite subset S ⊆ E satisfying:
+        - **1. Temporal contiguity**:
+          - there exist t_min, t_max ∈ T such that
+          - S = { e ∈ E ∣ t_min ≤ t_s(e) ∧ t_e(e) ≤ t_max } ∩ S′,
+          - for some set S′ ⊆ E determined by a session-partitioning criterion (e.g. shared engagement mode, container, or loop-cycle label), and
+        - **2. Maximality relative to the criterion**:
+          - if e ∈ E ∖ S satisfies the same session-partitioning criterion and has temporal interval contained in [t_min, t_max], then S ∪ {e} violates temporal contiguity (i.e. the criterion plus contiguity uniquely identifies the session).
+      - The ontology does not fix a unique session-partitioning criterion; that choice is left to instance projects, provided the resulting sessions are definable as above.
+      - Let **𝒮** denote the set of all sessions so defined.
+    - 4.2 State-slices induced by the ledger
+      - Given the global state definition
+        - state_t = (K_t, C_t, X_t, E_t, R_t), as defined in the Formal Ontology canon,
+      - the Event Ledger canon requires:
+        - that E_t = E_{≤ t} (the ledger prefix up to time t),
+        - and that each component of state_t is reconstructible from E_{≤ t} together with the other canonical layers and their update semantics.
+      - Formally, there must exist a family of reconstruction maps:
+        - reconstruct_t : Hist_{≤ t} → state_t
+      - where **Hist_{≤ t} is a derived history object** constructed from:
+        - (E_{≤ t}, C, K, X, R, P, Ω)
+      - according to the global ontology. The Event Ledger canon does not fix the internal form of Hist_{≤ t}; it only requires that such reconstruction maps exist and be well-typed.
+    - 4.3 Atomic events
+      - An event e is **atomic** if no proper subset of its semantics is represented as a distinct event in **E**. Concretely:
+        - if there do not exist e₁, e₂ ∈ E and a partition of the event coordinates such that e can be decomposed into e₁, e₂ with disjoint time intervals or strictly finer attribute-resolutions that preserve all layer invariants.
+      - Atomicity is a structural property of a given ledger instance; the ontology allows both atomic and composite events but requires that an instance specify its atomicity convention consistently.
+  - 5. Internal Invariants of the Event Ledger
+    - The following invariants must hold for any GAAO-compliant ledger **E**. They specialise the global invariants already stated in the Formal Ontology.
+    - 5.1 Temporal integrity
+      - **Interval consistency**
+        - For all e ∈ E:
+          - t_s(e) ≤ t_e(e).
+      - **Ledger coherence over time**
+        - For all t ≤ t′ ∈ T:
+          - E_{≤ t} ⊆ E_{≤ t′}.
+      - **Finite local density**
+        - For any bounded interval [u, v] ⊆ T, the set
+          - E_[u,v] := { e ∈ E ∣ interval(e) ∩ [u, v] ≠ ∅ }
+        - is finite.
+        - This ensures the ledger is locally countable over bounded time intervals.
+    - 5.2 Append-only evolution
+      - Let (E_{≤ t})_{t ∈ T} be the canonical filtration. The evolution of **E** must be **append-only**:
+        - there exists a family of event-addition operators
+          - append_t : E_{≤ t} × ℰ_t → E_{≤ t′}
+        - with t′ ≥ t and ℰ_t a set of candidate events,
+        - such that for all t ≤ t′:
+          - E_{≤ t′} = E_{≤ t} ∪ ΔE_{(t,t′]}
+        - for some ΔE_{(t,t′]} ⊆ E, and
+        - no event is removed or altered once included in **E**.
+      - At the ontological level, **append-only** means:
+        - The identity and coordinates of each e ∈ E are immutable once the event is in the ledger; only new events may be added.
+      - The precise operator-level realisation of append_t is delegated to instance projects and to the global loop **L**.
+    - 5.3 Referential integrity
+      - For all e ∈ E:
+        - λ_c(e) ∈ C (valid container reference),
+        - σ(e) ∈ X (valid condition snapshot),
+        - ω(e) ∈ Ω (valid outcome record),
+        - δ(e) ∈ D (valid deviation signal),
+        - κ(e) ⊆ K (valid set of constraints).
+      - These conditions restate, as invariants, the typing of event coordinates and link the ledger to other layers at the level of referential integrity.
+    - 5.4 Constraint-coverage integrity
+      - For any event e ∈ E, the set κ(e) must contain exactly those constraints in **K** that are **applicable** to the event according to the constraint fabric semantics. At the ontology level this is expressed as:
+        - κ(e) = { k ∈ K ∣ active_k(e) },
+      - where active_k(e) is a predicate defined in the Constraint Fabric canon, using the constraint activation window W and bound container set L_c.
+      - No constraint outside **K** may appear in any κ(e).
+    - 5.5 Monotone exposure of deltas and deviations
+      - Let f_δ : (π, α) → D be the canonical delta operator.
+      - For any event e:
+        - δ(e) = f_δ(π(e), α(e)).
+      - For any ledger prefix E_{≤ t}:
+        - all deltas associated to events in E_{≤ t} are fixed and may be used by evidential operators Drift and 𝒯_r; subsequent events cannot retroactively alter a previously recorded δ.
+      - This yields **monotone exposure** of deviation information over time.
+    - 5.6 Compatibility with the recursive loop
+      - Given the global update rule:
+        - state_{t+1} = 𝓛(state_t),
+      - the Event Ledger must evolve in a way that is compatible with 𝓛:
+        - any event produced by a single application of 𝓛 at time t must appear in E_{≤ t′} for some t′ ≥ t,
+        - and no event in **E** may correspond to a state transition that is not realisable under some sequence of applications of 𝓛.
+      - The precise mapping from loop invocations to event additions is left to instance-level mechanisms, but the existence of such a mapping is required.
+  - 6. Interfaces with Other Layers
+    - This section formalises the type-level interfaces and coherence conditions between **E** and the remainder of the GAAO tuple. These conditions refine the global structural interfaces already specified.
+    - 6.1 Interface with the Semantic Topology (C)
+      - Every event carries exactly one container reference λ_c(e) ∈ C.
+      - For each container c ∈ C, define its event-set:
+        - E_c := { e ∈ E ∣ λ_c(e) = c }.
+      - The container’s event history component H_e is required to be a representation (e.g. a chronologically ordered view) of E_c.
+      - **Coherence condition:**
+        - For any container c and time t, the event history view H_e(c, t) must be derivable from E_{≤ t} ∩ E_c and must preserve temporal ordering induced by ≺_T.
+    - 6.2 Interface with the Constraint Fabric (K)
+      - For each constraint k ∈ K, its evaluation function γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated} is defined over the entire ledger and condition/topology states.
+      - The activation window W_k ⊆ T and bound containers L_c(k) ⊆ C determine which events in **E** are relevant for evaluation.
+      - **Coherence conditions:**
+        - **Domain validity:** For all k ∈ K, γ_k must be total on its domain: it is defined for any triple (E′, X′, C′) with E′ ⊆ E, X′ ⊆ X, C′ ⊆ C.
+        - **Window-restriction:** For evaluation at time t, γ_k may only depend on events in E_[u,v] with [u, v] ⊆ W_k.
+        - **Container-restriction:** Only events whose containers lie in L_c(k) may influence the constraint’s evaluation.
+    - 6.3 Interface with the Condition Space (X)
+      - Every event carries a condition snapshot σ(e) ∈ X.
+      - For each t ∈ T, the condition profile X_t ⊆ X must be consistent with the collection { σ(e) ∣ e ∈ E_{≤ t} } and with the condition-space update operators update_M, update_X.
+      - **Coherence conditions:**
+        - **Snapshot realisability:** 
+          - For any event e, σ(e) must be realisable from the condition update dynamics given the history up to t_s(e).
+        - **No orphan snapshots:** 
+          - There is no condition snapshot in an event that refers to dimensions or models outside the globally valid sets X_d, X_m.
+    - 6.4 Interface with the Evidential Graph (R)
+      - Evidence records r ∈ R may reference events in **E** via their event-coordinate e.
+      - Delta, drift, and trajectory evidence are derived using the canonical operators:
+        - f_δ : (π, α) → D
+        - Drift : R → {ϕ₁,…,ϕₙ}
+        - 𝒯_r : R → {τ₁,…,τ_m}.
+      - **Coherence conditions:**
+        - **Evidence anchoring:** 
+          - Every evidence record that refers to events must reference only events in **E**.
+        - **Delta provenance:** 
+          - For any e ∈ E, if there exists a delta evidence record r with r.type = DeltaEvidence and r.e = e, then r.derived must agree with δ(e).
+        - **Prefix locality:** 
+          - Any evidential computation at time t must depend only on E_{≤ t} and R_{≤ t} (the evidence ledger up to t).
+    - 6.5 Interface with the Transformation Layer (P, Ω)
+      - Progress records p ∈ P involve an originating event e ∈ E and container c ∈ C.
+      - Outcome records ω ∈ Ω may be referenced directly in events via the ω-coordinate and appear in container histories H_ω.
+      - **Coherence conditions:**
+        - **Outcome alignment:** 
+          - For each event e, the outcome record ω(e) must be compatible with the Transformation Layer semantics for that event and its containers.
+        - **Progress anchoring:** 
+          - Every progress record must correspond to at least one event in **E**; there are no progress records without ledger support.
+    - 6.6 Interface with the Adaptive Reasoning Engine (I)
+      - The Adaptive Reasoning Engine:
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ}
+      - consumes the ledger **E** as one of its inputs.
+      - Coherence conditions:
+        - **1. Input well-formedness:** 
+          - Any invocation of I must use a ledger prefix E_{≤ t} for some t, never a hypothetical ledger not compatible with the append-only and temporal integrity invariants.
+        - **2. Plan realisability:**
+          - Any plan proposal in Π that results in events must correspond to events that can be added to **E** without violating internal invariants of this canon.
+    - 6.7 Interface with the Recursive Loop (L)
+      - The recursive loop **L** and its induced operator 𝓛 govern the evolution of state_t, which includes **E**:
+        - Each cycle of **L** may generate new events; these must be appended to the ledger consistently with the append-only and temporal rules.
+        - The loop must treat **E** as the canonical record of past behaviour; any state reconstruction must derive from E_{≤ t} and other layers as specified in Section 4.2.
+  - 7. Ledger Closure and Well-Formedness
+    - A ledger **E** is **GAAO-well-formed** if and only if all of the following hold:
+      - **1. Type closure**
+        - Every e ∈ E is an element of the event product type     T × T × C × M × A × A × X × Ω × D × 𝒫(K).
+      - **2. Temporal closure**
+        - For every t ∈ T, the prefix E_{≤ t} is well-defined and satisfies temporal integrity and append-only evolution.
+      - **3. Referential closure**
+        - All references from **E** into C, X, Ω, D, K are valid, and all such referenced objects exist in their respective layers.
+      - **4. Constraint/evidence closure**
+        - For any constraint or evidence evaluation that references events, those events belong to **E**, and all such evaluations use only ledger prefixes consistent with the temporal filtration.
+      - **5. Session closure (if sessions are defined)**
+        - Any session S ∈ 𝒮 is a finite subset of **E** satisfying the session axioms in Section 4.1; the set of sessions is closed under the chosen session-partitioning criterion.
+    - These conditions ensure that **E** can serve as the canonical temporal backbone for all other layers without requiring additional non-ledger sources of truth.
+  - 8. Ontological Identity and Versioning
+    - The Event Ledger Layer **E** is one of the primitive components of the GAAO tuple and may not change role without a major ontology revision.
+    - Any modification to the event type, to the required invariants, or to the fundamental interfaces between **E** and other layers constitutes a change to the GAAO Formal Ontology and must follow the canonical modification protocol and Build Log requirements.
+    - This document defines the **Event Ledger Layer canon for GAAO v1.0**, consistent with the existing Formal Ontology, System Spec, and preprint.
+    - No additional operational or domain-specific semantics are implied beyond what is formally stated here.

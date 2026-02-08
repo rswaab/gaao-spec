@@ -1,0 +1,169 @@
+Canon – Transformation Layer (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Transformation Layer (P, Ω) of the General Adaptive Agent Ontology (GAAO) specifies the ontology of transformation records that encode how behaviour changes over time, as measured progress and realised outcomes. It refines the primitive progress and outcome record sets **P** and **Ω** already defined in the Formal Ontology and System Spec.
+    - This document:
+      - fixes the internal structure of progress and outcome records,
+      - defines how transformations are typed over containers, events, metrics, and deviations,
+      - characterises internal invariants on progress and outcome records,
+      - constrains how progress and outcomes may be derived from other layers,
+      - and formalises interfaces between **(P, Ω)** and the remaining components of the agent tuple
+        - A = (E, C, K, X, R, P, Ω, I, L).
+    - All definitions specialise the global primitives and structures already defined in the GAAO v1.0 System Spec, Formal Ontology, and preprint. No primitive set or canonical operator is redefined.
+  - 2. Transformation Structures
+    - 2.1 Primitive sets and references
+      - The Transformation Layer is defined over the following primitive sets and references:
+        - T — time domain
+        - C — semantic container set
+        - E — event ledger
+        - R — evidence records
+        - D — deviation space
+        - Λ — metric space (for progress)
+        - P — progress records
+        - Ω — outcome records
+        - M — engagement-mode set (appearing in the event product type),
+        - A — attribute space (for π, α),
+        - X — condition space,
+        - K — constraint set (for κ).
+      - Events already inhabit the product type
+        - E ⊆ T × T × C × M × A × A × X × Ω × D × 𝒫(K),
+      - and therefore reference outcome records ω ∈ Ω and deviation signals δ ∈ D directly.
+      - Semantic containers c ∈ C maintain histories H_p and H_ω that accumulate progress and outcome records associated with that container.
+    - 2.2 Progress records
+      - Let Λ be the metric space for progress measurement.
+      - The set of progress records is P. A progress record has the canonical form
+        - p = (c, metric, v, d, e, t) ∈ P,
+      - where:
+        - c ∈ C — container in which progress is recorded,
+        - metric ∈ Λ — progress metric (element of the metric space),
+        - v — magnitude of progress relative to the metric,
+        - d ∈ {−1, 0, 1} — direction: away from (−1), neutral (0), toward (1),
+        - e ∈ E — originating event,
+        - t ∈ T — timestamp.
+      - **Typing constraint.** The type of P is therefore constrained by:
+        - P ⊆ C × Λ × V × {−1, 0, 1} × E × T,
+      - for some value space V determined at instance level (not fixed at ontological level).
+    - 2.3 Outcome records
+      - The set of outcome records is Ω. An outcome record has the canonical form
+        - ω = (i, x, s, δ) ∈ Ω,
+      - where:
+        - i — internal effect component,
+        - x — external effect component,
+        - s — state-transition marker,
+        - δ ∈ D — deviation classification.
+      - Events directly embed outcome records and deviation signals:
+        - for each e ∈ E, e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ) with ω ∈ Ω, δ ∈ D.
+    - 2.4 Derivation context
+      - At the ontological level, the Transformation Layer is not a primitive generator of change but a recorder of measured and classified transformation under the Recursive Adaptation Loop L and induced operator 𝓛.
+      - The operational state at time t is
+        - state_t = (K_t, C_t, X_t, E_t, R_t), as defined in the Formal Ontology canon.
+      - The loop induces a state-transition operator
+        - state_{t+1} = 𝓛(state_t).
+      - The preprint and formal ontology fix that:
+        - progress P and outcomes Ω are **derived from (E, C, R) under this loop**, not arbitrarily:
+          - P, Ω are functions of (E, C, R) under L and 𝓛, subject to typing and coherence constraints.
+      - This document treats such derivation abstractly; no concrete derivation algorithm is introduced.
+  - 3. Internal Invariants
+    - 3.1 Well-formedness of records
+      - A progress record p = (c, metric, v, d, e, t) is well-formed iff:
+        - c ∈ C, metric ∈ Λ, e ∈ E, t ∈ T, d ∈ {−1, 0, 1}.
+        - The container reference c is consistent with the event e:
+          - if e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ), then λ_c = c.
+        - The timestamp t is temporally compatible with the event, under the temporal convention chosen in Section 3.3.
+      - An outcome record ω = (i, x, s, δ) is well-formed iff:
+        - δ ∈ D, and (i, x, s) inhabit instance-level spaces chosen by the derived system but fixed per instance.
+        - For every ω ∈ Ω there exists at least one event e ∈ E such that the ω field of e equals this record.
+    - 3.2 Transformation closure
+      - The following closure properties must hold:
+        - **1. Event–Transformation closure.**
+          - For each p ∈ P there exists a unique originating event e ∈ E given by the p.e field.
+          - For each e ∈ E, the set of associated progress records
+            - P_e ≔ { p ∈ P ∣ p.e = e }
+          - is finite over any bounded time interval in T (local finiteness over finite windows).
+        - **2. Container–Transformation closure.**
+          - For each p ∈ P, its container c lies in C and p must appear in the progress history H_p of c.
+          - For each ω ∈ Ω that is embedded in an event e with container λ_c, ω must appear in the outcome history H_ω of the corresponding container c = λ_c.
+        - **3. Deviation linkage.**
+          - Each outcome record ω = (i, x, s, δ) must reference a deviation δ that is itself derivable from some pair (π, α) via the canonical delta operator
+            - δ = f_δ(π, α) ∈ D.
+          - The Transformation Layer may not introduce δ independently of this evidential pipeline.
+    - 3.3 Temporal consistency
+      - Progress and outcome records respect the temporal ordering of the Event Ledger:
+        - 1. If p = (c, metric, v, d, e, t), then t must lie in or after the interval [t_s, t_e] of its originating event e:
+          - t_s ≤ t, and t ≤ t_e or t ≥ t_e depending on instance-level choice, but never t < t_s.
+        - 2. For each container c, its histories (H_p, H_ω) admit a temporal ordering that is consistent with T:
+          - entries are totally ordered by their timestamps, and
+          - there are no contradictions with the ordering of underlying events in E.
+    - 3.4 Evidence–Transformation coherence (internal view)
+      - The Formal Ontology states:
+        - Progress P and outcomes Ω must reference valid evidence records R and containers C.
+      - At the Transformation Layer this is internalised as:
+        - 1. For each p ∈ P there exists at least one evidence record r ∈ R with:
+          - r.type = ProgressEvidence,
+          - r.e = p.e, and (optionally, at instance level) r.derived or r.raw encodes p.
+        - 2. For each ω ∈ Ω there exists at least one evidence record r ∈ R with:
+          - r.type = OutcomeEvidence,
+          - r.e is an event whose outcome field equals ω.
+      - The Transformation Layer itself does not define how such evidence is generated; it requires that such evidence exist for every progress and outcome record in a valid agent.
+  - 4. Interfaces and Cross-Layer Coherence
+    - 4.1 Event–Transformation interface
+      - Events and transformation records are tightly coupled:
+        - 1. Every event e ∈ E embeds:
+          - an outcome ω ∈ Ω,
+          - a deviation δ ∈ D.
+        - 2. Every progress record p ∈ P references an event e ∈ E (its field e), and that event fixes:
+          - the semantic container λ_c,
+          - the condition snapshot σ,
+          - the applicable constraint subset κ.
+        - 3. The mapping from events to progress/outcome records is many-to-many:
+          - an event may induce zero or more progress records,
+          - progress records may accumulate across multiple events within the same container and metric,
+          - every outcome embedded in an event is a single ω ∈ Ω but may be referenced by multiple evidential records r ∈ R.
+    - 4.2 Container–Transformation interface
+      - Semantic containers c ∈ C maintain structured histories H_p and H_ω which must be consistent with P and Ω:
+        - If p = (c, metric, v, d, e, t) ∈ P, then p ∈ H_p(c).
+        - If e ∈ E has container λ_c and outcome ω ∈ Ω, then ω ∈ H_ω(λ_c).
+        - Topological relations over containers (parent, rooted-tree structure) impose no additional arithmetic on P or Ω but constrain how transformation histories may be aggregated over subtrees of G = (C, parent). Any aggregation must respect the rooted-tree topology.
+    - 4.3 Evidence–Transformation interface
+      - The Evidential Graph Layer R includes record types for progress and outcome evidence as well as delta, drift, and trajectory signals.
+      - The Transformation Layer interfaces with R via:
+        - Evidence records r ∈ R of type ProgressEvidence or OutcomeEvidence that reference p ∈ P and ω ∈ Ω respectively.
+        - Delta records δ = f_δ(π, α) ∈ D, drift signals ϕ, and trajectory signals τ, which may be used by instance-level derivation processes to define or refine ω and the s component of ω.
+      - At the ontological level, the only requirement is that any deviation δ embedded in ω be consistent with the canonical delta operator and evidential derivation pipeline.
+    - 4.4 Constraints and conditions
+      - Constraint evaluation and condition dynamics are defined elsewhere:
+        - γ_k : (E, X, C) → [0, 1] ∪ {fulfilled, violated}, for k ∈ K,
+        - update_M, update_X : (X, R) → X.
+      - The Transformation Layer must remain compatible with these as follows:
+        - 1. Progress and outcome records may be consumed by constraint evaluation and condition-update operators only via E and R:
+          - no operator may depend directly on internal representation details of P or Ω beyond what is exposed through events and evidence.
+        - 2. Any use of ω in constraint evaluation must treat ω as a fixed outcome associated with an event e; the Transformation Layer does not permit retroactive mutation of ω that would invalidate prior evaluations γ_k(e, X, C).
+        - 3. Condition updates may use progress or outcome evidence (via R) but may not alter the historical content of P or Ω; they only modify X.
+    - 4.5 Adaptive reasoning and loop
+      - The Adaptive Reasoning Engine I and loop L are defined independently:
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ},
+        - L = {Plan → Execute → Log → Interpret → Adjust},
+        - state_{t+1} = 𝓛(state_t).
+      - The Transformation Layer must satisfy:
+        - **1. Loop compatibility.**
+          - Any plan, adjustment, or simulation produced by I that results in new events must yield transformations (P, Ω) that remain derivable from (E, C, R) under the same loop schema; no alternative transformation mechanism is admitted.
+        - **2. Reasoning independence.**
+          - I does not take P or Ω as direct inputs; transformation records influence reasoning only via E, X, K, C, R. This preserves the structural interfaces fixed in the Formal Ontology.
+  - 5. Layer Identity and Allowed Specialisation
+    - 5.1 Role of the Transformation Layer
+      - Within the global agent tuple A = (E, C, K, X, R, P, Ω, I, L), the Transformation Layer is uniquely responsible for:
+        - capturing progress dynamics via P,
+        - capturing outcome semantics via Ω,
+        - coupling these to events, containers, deviations, and evidence,
+        - doing so in a way that is compatible with the recursive loop L and state-transition operator 𝓛.
+      - No other layer may redefine or usurp these roles without constituting a new ontology version.
+    - 5.2 Specialisation in instance projects
+      - Derived instance projects may specialise the Transformation Layer only by:
+        - refining the value spaces for v, i, x, s,
+        - adding instance-level structure to metrics or outcome components,
+        - defining concrete derivation functions that map (E, C, R) into P and Ω under L,
+      - subject to the constraints that:
+        - P and Ω remain subsets of the canonical product types,
+        - all invariants and interfaces stated in this document and in the Formal Ontology remain satisfied,
+        - no new primitive delta, drift, or trajectory operators are introduced (all must flow via f_δ, 𝒯_r, Drift).
+      - Under these constraints, the Transformation Layer continues to encode “what change means” for the agent in a way that is ontologically consistent across all GAAO-compliant systems.

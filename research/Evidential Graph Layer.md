@@ -1,0 +1,251 @@
+Canon – Evidential Graph Layer (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Evidential Graph Layer **R** of the General Adaptive Agent Ontology (GAAO) specifies the structures and invariants governing evidence records and their induced graph, through which the agent accumulates, organises, and interrogates truth over time.
+    - This document:
+      - fixes the internal structure of evidence records **R** and their types,
+      - specialises the deviation space **D** and delta, drift, and trajectory signals,
+      - defines the evidential operators **f_δ**, **𝒯_r**, and **Drift**,
+      - interprets **R** as a typed evidential graph with nodes and edges,
+      - states internal invariants for evidential consistency and truth maintenance,
+      - and formalises interfaces between **R** and the layers **E, C, K, X, P, Ω, I, L** of the agent tuple
+        - A = (E, C, K, X, R, P, Ω, I, L).
+    - All definitions specialise the primitives and structures already defined in the GAAO v1.0 System Spec, Formal Ontology, and preprint; no primitive set or operator is redefined.
+  - 2. Evidential Structures
+    - 2.1 Primitive sets and references
+      - This layer relies on the primitive sets and operators:
+        - **R** — evidence records, the base set of the Evidential Graph Layer, as in the global primitive sets.
+        - **D** — deviation space, shared with the Event Ledger and Transformation Layer.
+        - **Φ** — pattern space (drift and trajectories), and **Ψ** — deviation-classification space.
+        - **E, C, K, X, P, Ω** — event ledger, semantic containers, constraints, condition space, progress records, and outcome records respectively.
+      - Evidential operators:
+        - **f_δ : (π, α) → D** — delta operator,
+        - **𝒯_r : R → {τ₁,…,τ_m}** — trajectory extraction operator,
+        - **Drift : R → {ϕ₁,…,ϕₙ}** — drift extraction operator.
+      - Adaptive reasoning and loop operators that consume **R**:
+        - **I : (X, E, K, C, R) → {Π, Δ, S, Υ}**,
+        - **I_int(R, X) → Υ**,
+        - **I_pat(R) → Φ**,
+        - **I_Δ : D → Ψ**,
+        - **I_adj(K, C, X, R) → Δ**,
+        - loop state **state_t = (K_t, C_t, X_t, E_t, R_t)** and **state_{t+1} = 𝓛(state_t)**, with state_t as defined in the Formal Ontology canon.
+    - 2.2 Evidence records
+      - An **evidence record** is defined (in the spec and preprint) as:
+        - r = (id, type, t, c, k, e, raw, derived, conf, src),
+      - with the following intended typing and roles:
+        - **id** — unique evidence identifier (within **R**),
+        - **type** — evidence type tag, one of     {EventEvidence, DeltaEvidence, ProgressEvidence, OutcomeEvidence, DriftSignal, TrajectorySignal},
+        - **t ∈ T** — timestamp of the evidence record,
+        - **c ∈ C ∪ {⊥}** — associated container context (optional),
+        - **k ∈ K ∪ {⊥}** — associated constraint (optional),
+        - **e ∈ E ∪ {⊥}** — associated event (optional),
+        - **raw** — raw evidential payload (unconstrained at the ontology level),
+        - **derived** — derived signal payload (e.g. δ, ϕ, τ, or other derived structure),
+        - **conf ∈ [0,1]** — evidence-level confidence,
+        - **src** — provenance marker (source identifier, unconstrained at the ontology level).
+      - The components **raw**, **derived**, **conf**, and **src** are abstract carriers:
+        - their internal schemas are left to derived instance projects, subject only to the typing and coherence constraints in this canon and the Formal Ontology.
+      - The **evidence set** is:
+        - R = { r₁, r₂, … }.
+      - At the type level, we require:
+        - R ⊆ Id × Type × T × (C ∪ {⊥}) × (K ∪ {⊥}) × (E ∪ {⊥}) × Raw × Derived × [0,1] × Src,
+      - where **Raw**, **Derived**, and **Src** are abstract carrier sets whose concrete realisation is deferred to instance projects.
+    - 2.3 Delta records and deviation space
+      - The **deviation space** **D** is defined globally and shared with events and outcomes.
+      - A **delta record** is defined as:
+        - δ = f_δ(π, α) ∈ D,
+      - computed from planned vs actual attributes of an event.
+      - For each event
+        - e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ) ∈ E,
+      - its deviation component **δ ∈ D** must coincide with **f_δ(π, α)** (see invariants below).
+      - Within **R**, delta-related evidence is represented by records **r ∈ R** with:
+        - type = DeltaEvidence, and
+        - derived component containing **δ ∈ D**, produced via **f_δ** from the associated event’s attributes.
+    - 2.4 Drift and trajectory signals
+      - Drift and trajectory signals are defined as:
+      - Drift signal:
+        - ϕ = (type, magnitude, recurrence, link, t₁, tₙ),
+      - Trajectory signal:
+        - τ = (pattern, container, direction, confidence, window).
+      - In the evidential layer:
+        - DriftSignal-type evidence records carry drift signals ϕ in their **derived** component,
+        - TrajectorySignal-type evidence records carry trajectory signals τ in their **derived** component,
+        - both may be further linked to **C, K, E** via the **c, k, e** fields.
+    - 2.5 Evidential operators and pattern spaces
+      - The evidential operators are canonically defined as:
+        - f_δ : (π, α) → D,
+        - 𝒯_r : R → {τ₁,…,τ_m},
+        - Drift : R → {ϕ₁,…,ϕₙ}.
+      - Pattern and deviation-classification spaces:
+        - Φ — pattern space (drift and trajectory patterns),
+        - Ψ — deviation-classification space.
+      - These satisfy:
+        - 𝒯_r(R) ⊆ Φ,
+        - Drift(R) ⊆ Φ,
+        - I_Δ : D → Ψ.
+      - The Formal Ontology states that these operators are the **only** canonical sources of δ, ϕ, and τ in the ontology.
+  - 3. Graph Interpretation
+    - 3.1 Evidential graph as derived structure
+      - The **evidential graph** is a derived structure over **R**, not an additional primitive layer.
+      - Define:
+        - V_R = R — the node set (each evidence record is a node),
+        - E_R ⊆ R × R — an edge relation,
+        - ℓ_R : E_R → EdgeType — an edge labelling function.
+      - Then the **evidential graph** is:
+        - G_R = (V_R, E_R, ℓ_R),
+      - where **EdgeType** is a finite set of edge labels expressing typed relationships between evidence records, such as:
+        - SameEvent,
+        - SameContainer,
+        - SameConstraint,
+        - DerivesFrom,
+        - Supports.
+      - Instance projects may refine **EdgeType** and the construction of **E_R**; the canonical layer only requires that:
+        - edges are derived from existing cross-references between **r.e, r.c, r.k, r.derived**, and
+        - no edge may reference nodes outside **R**.
+    - 3.2 Node and edge typing
+      - For **r, r' ∈ R**, edges may be induced when:
+        - r.e = r'.e ≠ ⊥ (SameEvent),
+        - r.c = r'.c ≠ ⊥ (SameContainer),
+        - r.k = r'.k ≠ ⊥ (SameConstraint),
+        - r'.derived is computed from a set of evidence that includes r (DerivesFrom),
+        - r and r' mutually support or refine the same δ, ϕ, τ, progress, or outcome structure (Supports).
+      - The canonical constraints are:
+        - all edges must be well-typed with respect to **E, C, K, D, Φ, Ψ**,
+        - edge labels must accurately reflect the underlying relation (e.g. DerivesFrom cannot be used for mere co-reference).
+    - 3.3 Graph-level properties
+      - At the ontological level:
+        - G_R is allowed to contain cycles (e.g. mutually supporting evidence),
+        - G_R is not required to be connected,
+        - subgraphs corresponding to fixed events, containers, or constraints are permitted and will be central in instance projects.
+      - No additional graph-theoretic invariants (e.g. acyclicity, bounded degree) are imposed at the canonical level.
+  - 4. Internal Invariants
+    - 4.1 Well-formedness of evidence records
+      - For all r = (id, type, t, c, k, e, raw, derived, conf, src) ∈ R:
+        - **1. Identity uniqueness**
+          - id is unique in R.
+        - **2. Temporal well-typing**
+          - t ∈ T and the ordering of timestamps is consistent with the global time domain.
+        - **3. Container and constraint references**
+          - if c ≠ ⊥ then c ∈ C,
+          - if k ≠ ⊥ then k ∈ K.
+        - **4. Event references**
+          - if e ≠ ⊥ then e ∈ E.
+        - **5. Confidence bounds**
+          - conf ∈ [0,1].
+        - **6. Type-specific requirements**
+          - if type = EventEvidence then e ≠ ⊥ and raw or derived encodes some aspect of e,
+          - if type = DeltaEvidence then derived contains δ ∈ D and there exists e ∈ E such that δ = f_δ(π_e, α_e) and r.e = e,
+          - if type = ProgressEvidence then derived contains a progress record p ∈ P, linked to e and c consistently with p = (c, metric, v, d, e, t_p),
+          - if type = OutcomeEvidence then derived contains an outcome record ω ∈ Ω linked to some δ ∈ D and event(s) e,
+          - if type = DriftSignal, then derived contains ϕ and ϕ ∈ Drift(R'),
+          - if type = TrajectorySignal, then derived contains τ and τ ∈ 𝒯_r(R'),
+        - for some R' ⊆ R (possibly R itself).
+    - 4.2 Evidential consistency and closure
+      - The Formal Ontology states:
+        - every delta, drift, or trajectory signal must derive from valid evidence records via the canonical operators, and
+        - evidence records must maintain referential integrity to events, containers, and constraints.
+      - We specialise this to the following invariants:
+        - **1. Delta closure**
+          - For any δ ∈ D that appears in events E or outcomes Ω, there exists at least one r ∈ R with type = DeltaEvidence such that δ is present in r.derived and δ = f_δ(π, α) for some event attributes (π, α).
+        - **2. Drift and trajectory closure**
+          - For any ϕ produced by Drift(R), there exists at least one r ∈ R with type = DriftSignal and r.derived containing ϕ.
+          - For any τ produced by 𝒯_r(R), there exists at least one r ∈ R with type = TrajectorySignal and r.derived containing τ.
+        - **3. Referential integrity**
+          - All non-null references r.c, r.k, r.e must be to valid elements of C, K, E respectively.
+          - No evidence record may “point outside” the current agent’s E, C, K.
+    - 4.3 Truth-maintenance constraints
+      - The evidential graph functions as a truth-maintenance backbone. Ontological invariants:
+        - **1. Persistence**
+          - Once an evidence record r is admitted to R, it is not removed; any revision or correction must be represented as additional evidence (e.g. a new record referencing r via a Supports or DerivesFrom edge).
+        - **2. Non-contradiction via typing**
+          - Contradictory or competing claims are represented as distinct evidence records; the ontology does not prescribe a resolution algorithm but requires that contradictions be explicit in R rather than silently overwriting earlier evidence.
+        - **3. Operator soundness**
+          - f_δ, Drift, and 𝒯_r must not produce δ, ϕ, τ that lack supporting evidence in R (delta closure and pattern closure above).
+          - I_int and I_pat may interpret and summarise, but may not modify R directly; they consume R and produce elements in Υ and Φ.
+    - 4.4 Temporal properties and histories
+      - Although **R** is not itself time-indexed as a ledger, it is aligned with the temporal backbone **T** and the event ledger **E**:
+        - **1. Timestamp coherence**
+          - For any evidence r with e ≠ ⊥, r.t must be ≥ t_e (or within a layer-defined window) where e = (t_s, t_e,…).
+        - **2. Container drift histories**
+          - For any container c ∈ C with drift history H_ϕ (as defined in the Semantic Topology Layer), H_ϕ must equal the set of drift signals ϕ that appear in evidence records r ∈ R with:
+            - r.type = DriftSignal,
+            - r.c = c, and
+            - ϕ ∈ r.derived.
+        - **3. State alignment**
+          - At any time t, the evidential component of the loop state is R_t ⊆ R, the set of evidence records with timestamp ≤ t, and **state_t = (K_t, C_t, X_t, E_t, R_t)** as specified in the preprint.
+  - 5. Interfaces and Cross-Layer Coherence
+    - 5.1 Event–Evidence interface
+      - Cross-layer coherence constraints already stated in the Formal Ontology include:
+        - **Event–Evidence Coherence** — all evidence records must map to at least one event in E.
+      - We specialise this as:
+        - Define a (possibly partial, many-to-many) mapping
+          - η_event : R → 𝒫(E),
+          - such that for every r ∈ R, η_event(r) ≠ ∅.
+        - For EventEvidence, DeltaEvidence, ProgressEvidence, and OutcomeEvidence, the field r.e must be a member of η_event(r).
+      - The event deviation component δ in events must be consistent with f_δ and the corresponding DeltaEvidence records in R.
+    - 5.2 Evidence–Semantic topology interface
+      - Evidence attaches to semantic containers at two levels:
+        - **1. Record-level tags**
+          - r.c ∈ C for r ∈ R with c ≠ ⊥.
+        - **2. Container histories**
+          - Container histories H_e, H_ω, H_p, H_ϕ are defined over E, Ω, P, and drift signals respectively.
+      - Coherence requirements:
+        - For any container c, its histories must be reconstructible from the subset of R whose records reference c, i.e.:
+          - event history H_e(c) is induced by EventEvidence records with r.c = c,
+          - outcome and progress histories are induced by OutcomeEvidence and ProgressEvidence records with r.c = c,
+          - drift history H_ϕ(c) matches the drift signals ϕ in DriftSignal-type evidence with r.c = c.
+    - 5.3 Evidence–Constraint interface
+      - Constraints evaluate behaviour via:
+        - γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated}.
+      - The evidential layer supports this by:
+        - providing DeltaEvidence, DriftSignal, and TrajectorySignal records linked to constraints via r.k,
+        - allowing I_Δ and other reasoning operators to classify deviations in Ψ, which may be used in constraint evaluation and adjustment.
+      - Coherence invariant:
+        - if r.k ≠ ⊥, then the semantics of r (its δ, ϕ, τ, or progress/outcome payload) must be compatible with γ_k, i.e. r represents evidence relevant to the evaluation or adjustment of k.
+    - 5.4 Evidence–Condition space interface
+      - Condition dynamics are governed by:
+        - update_M : (X, R) → X for models M ∈ X_m,
+        - update_X : (X, R) → X (global).
+      - Interface constraints:
+        - update_M and update_X must treat R as a read-only evidential input;
+        - condition profiles X_t may depend on arbitrary subsets of R_{≤ t}, but must obey their own typing invariants;
+        - I_int(R, X) → Υ combines R and X to produce interpretive summaries without modifying R.
+    - 5.5 Evidence–Transformation layer interface
+      - The Transformation Layer defines:
+        - progress records p = (c, metric, v, d, e, t) ∈ P,
+        - outcome records ω = (i, x, s, δ) ∈ Ω.
+      - Formal Ontology imposes **Evidence–Transformation Coherence**:
+        - progress P and outcomes Ω must reference valid evidence records R and containers C.
+      - We specialise:
+        - For every p ∈ P there exists at least one r ∈ R with type = ProgressEvidence such that:
+          - r.derived encodes p,
+          - r.c = p.c, r.e = p.e, and r.t = p.t.
+        - For every ω ∈ Ω there exists at least one r ∈ R with type = OutcomeEvidence such that:
+          - r.derived encodes ω,
+          - δ_ω = ω.δ is consistent with some δ ∈ D appearing in E and in DeltaEvidence records.
+      - Progress P and outcomes Ω are derived from (E, C, R) under the recursive loop.
+    - 5.6 Evidence–Reasoning engine interface
+      - The Adaptive Reasoning Engine consumes R through multiple operators:
+        - I_int(R, X) → Υ (interpretation),
+        - I_pat(R) → Φ (pattern extraction),
+        - I_Δ : D → Ψ (deviation classification),
+        - I_adj(K, C, X, R) → Δ (adjustment).
+      - Reasoning validity requires:
+        - operators return well-typed outputs,
+        - they do not violate temporal or topological invariants.
+      - In relation to R:
+        - I_int and I_pat may interpret and aggregate evidence but must not mutate R,
+        - I_adj may produce adjustments that will eventually manifest as new events E and, through logging, new evidence R, but cannot retroactively alter existing evidence.
+    - 5.7 Evidence–Recursive loop interface
+      - The recursive loop schema is:
+        - L = {Plan → Execute → Log → Interpret → Adjust},
+        - state_t = (K_t, C_t, X_t, E_t, R_t),
+        - state_{t+1} = 𝓛(state_t).
+      - The Evidential Graph participates as follows:
+        - **Log**: new events in E_t generate new evidence records in R_t (EventEvidence, DeltaEvidence, ProgressEvidence, OutcomeEvidence),
+        - **Interpret**: R_t (with X_t) is consumed by I_int and I_pat to produce Υ and Φ,
+        - **Adjust**: I_adj(K_t, C_t, X_t, R_t) produces adjustments Δ, which alter constraints and plans and lead to new events and evidence.
+      - Loop coherence requires:
+        - 𝓛 must treat R as an append-only log component in state_t,
+        - any change to K, C, X driven by Δ must remain consistent with the evidential invariants defined in this document and the global Formal Ontology.
+  - This canonical file fully specifies the Evidential Graph Layer **R** at the ontology level, consistent with the GAAO v1.0 System Spec, Formal Ontology, and preprint, and provides the structural basis for delta, drift, trajectory, and multi-signal evidential reasoning in derived instance projects.

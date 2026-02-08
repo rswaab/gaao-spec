@@ -1,0 +1,218 @@
+Canon – Constraint Fabric (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Constraint Fabric **K** of the General Adaptive Agent Ontology (GAAO) specifies the set of constraints that govern allowable behaviours, priorities, and structural commitments of an agent over time. Constraints are treated as explicit, evaluable commitments that bind to semantic containers and are assessed against event histories and condition profiles.
+    - This document:
+      - fixes the internal structure of constraint records in **K**,
+      - defines activation windows and container binding for constraints,
+      - characterises hard vs soft constraints, inhibitory vs promotive constraints, and computable vs non-computable constraints at the ontological level,
+      - specifies conflict-resolution and aggregation semantics for simultaneously active constraints,
+      - states internal invariants required for a well-formed constraint fabric,
+      - and formalises interfaces between **K** and the other components of the agent tuple
+        - A = (E, C, K, X, R, P, Ω, I, L).
+    - All definitions specialise the global primitives and structures already defined in the GAAO v1.0 System Spec, Formal Ontology, and Preprint; no primitive set or operator is redefined.
+  - 2. Constraint Structure
+    - 2.1 Primitive sets and references
+      - This layer relies on the primitive sets and structures:
+        - T — time domain,
+        - C — semantic containers,
+        - K — constraint set,
+        - X — condition space,
+        - E — event ledger,
+        - R — evidence records,
+        - P, Ω — transformation layer (progress and outcomes).
+        - M — engagement-mode set (from the Formal Ontology),
+        - A — attribute space,
+        - D — deviation space,
+        - Λ — metric space (for progress / outcomes).
+      - Events reference applicable constraints via their constraint component κ ⊆ K.
+    - 2.2 Constraint records
+      - A **constraint** is a record:
+        - k = (id, ι, θ, μ, W, L_c, γ, H_k) ∈ K
+      - where:
+        - id — unique constraint identifier,
+        - ι — intention descriptor,
+        - θ — obligation specification,
+        - μ — measurement mode,
+        - W ⊆ T — activation window,
+        - L_c ⊆ C — set of bound containers,
+        - γ — evaluation function,
+        - H_k — adjustment history.
+      - The intention descriptor ι captures the high-level commitment or aim encoded by the constraint, and the obligation specification θ fixes what it means, in principle, for the constraint to be satisfied or violated.
+    - 2.3 Evaluation functions
+      - For each constraint k ∈ K, the evaluation function is:
+        - γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated}.
+      - Intuitively:
+        - values in [0,1] represent graded satisfaction, where larger values indicate stronger alignment,
+        - the symbols {fulfilled, violated} represent discrete satisfaction states.
+      - The ontology does not fix how graded and discrete codomains are combined or interpreted; it requires only that γ_k is well-typed and respects the invariants stated in Section 3.
+    - 2.4 Constraint classifications
+      - The following classifications are defined as *auxiliary* maps over K; they do not alter the canonical tuple k = (id, ι, θ, μ, W, L_c, γ, H_k).
+      - 2.4.1 Hard vs soft constraints
+        - Define:
+          - K_hard ⊆ K — hard constraints,
+          - K_soft ⊆ K — soft constraints,
+        - such that K_hard ∩ K_soft = ∅ and K_hard ∪ K_soft ⊆ K.
+        - A total classification function:
+          - class_h : K → {hard, soft}
+        - induces these subsets. 
+        -  **These subsets are derived classifications over the primitive set K; they do not introduce new primitive sets.**
+        - For hard constraints, violation is treated as non-negotiable at the ontological level (see Section 4.3); for soft constraints, graded satisfaction is allowed to trade off within aggregation operators.
+      - 2.4.2 Inhibitory vs promotive constraints
+        - Define a **polarity** map:
+          - pol : K → {inhibitory, promotive, mixed}
+            - inhibitory: the constraint is oriented toward preventing certain patterns in E, X, or Ω,
+            - promotive: the constraint is oriented toward encouraging certain patterns,
+            - mixed: the constraint contains both inhibitory and promotive aspects that cannot be reduced to a single orientation.
+        - Polarity is determined by the intention and obligation pair (ι, θ); no particular decision rule is fixed at the ontology level.
+      - 2.4.3 Computable vs non-computable constraints
+        - Define:
+          - K_comp ⊆ K — constraints whose evaluation functions γ_k are total and computable under some admissible model of computation,
+          - K_noncomp = K \ K_comp.
+        - A classification function:
+          - class_c : K → {computable, noncomputable}
+        - separates constraints whose satisfaction can, in principle, be decided by an algorithm from those that refer to idealised or non-decidable obligations. The ontology does not specify the computational model; it only recognises this distinction as relevant to how instances may implement γ_k.
+        -  **Again, these are derived subsets of the primitive set K, not additional primitive sets.**
+  - 3. Internal Invariants of the Constraint Fabric
+    - 3.1 Well-formedness of constraint records
+      - A GAAO-compliant agent must satisfy, for every k = (id, ι, θ, μ, W, L_c, γ, H_k) ∈ K:
+        - **1. Typing constraints**
+          - W ⊆ T,
+          - L_c ⊆ C,
+          - γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated}.
+        - **2. Identity and uniqueness**
+          - id is globally unique within K,
+          - H_k is a (possibly empty) sequence of adjustment records, each referencing this id.
+        - **3. Structural coherence**
+          - every container referenced in L_c must exist in C (Constraint–Container Coherence),
+          - W must refer to valid time intervals in T (Constraint Coherence).
+    - 3.2 Activation semantics
+      - For a given time t ∈ T and container c ∈ C, define the **locally active constraint set**:
+        - K_act(t, c) = { k ∈ K | t ∈ W_k ∧ c ∈ L_c(k) }.
+      - Here W_k and L_c(k) denote the activation window and bound container set of k.
+      - For an event e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ) ∈ E, any constraint k appearing in κ must be locally active at some time in [t_s, t_e] and bound to λ_c:
+        - κ ⊆ K,
+        - ∀k ∈ κ, ∃t ∈ [t_s, t_e] such that k ∈ K_act(t, λ_c).
+      - This ties the event’s “applicable constraints” to the formal activation semantics of the fabric.
+    - 3.3 Evaluation invariants
+      - For each k ∈ K and each admissible (E, X, C) triple:
+        - γ_k(E, X, C) is always defined (totality at the ontological level, even if non-computable),
+        - γ_k(E, X, C) ∈ [0,1] if the constraint is graded,
+        - γ_k(E, X, C) ∈ {fulfilled, violated} if the constraint is discrete,
+        - for hard constraints, any value corresponding to “violated” must be representable either explicitly (violated) or via a designated subset of [0,1] (e.g. values below a constraint-specific threshold); the ontology does not fix thresholds but requires that such a mapping exists.
+    - 3.4 Adjustment histories
+      - The adjustment history H_k captures the evolution of the constraint’s parameters (e.g. ι, θ, μ, W, L_c) over time. The ontology requires:
+        - each entry in H_k is time-stamped in T and references the relevant components being adjusted,
+        - adjustments must preserve well-formedness of k (Section 3.1) at every step,
+        - the sequence H_k is totally ordered by its timestamps.
+      - The exact structure of adjustment entries is left to instance projects; this layer requires only that adjustments be explicit, referentially coherent, and temporally ordered.
+    - 3.5 Responsibility, coherence, and viability
+      - At time t, given state_t = (K_t, C_t, X_t, E_t, R_t), define:
+        - K_hard,act(t, c) = K_act(t, c) ∩ K_hard,
+        - K_soft,act(t, c) = K_act(t, c) ∩ K_soft.
+      - The **local responsibility profile** at (t, c) is the family of evaluations {γ_k(E_t, X_t, C_t)} for k ∈ K_act(t, c).
+      - A state_t is:
+        - **hard-coherent** at (t, c) if all k ∈ K_hard,act(t, c) are evaluated as fulfilled (in the discrete or graded sense),
+        - **soft-aligned** at (t, c) if some designated aggregation of the soft constraints (Section 4.2) exceeds an admissible alignment level.
+      - A state_t is **locally viable** at (t, c) if there exists at least one future event ledger extension E′ ⊇ E_t such that all hard constraints in K_hard,act(t′, c′) can be fulfilled over their activation windows, for all future times t′ in those windows and all containers c′ they bind to. The ontology asserts the concept of such extensions but does not specify how they are constructed.
+  - 4. Constraint Operations and Aggregation
+    - 4.1 Constraint sets and projections
+      - The following canonical operations on constraint sets are defined:
+        - For S ⊆ K and container c ∈ C,
+          - S|_c = {k ∈ S | c ∈ L_c(k)} — projection of S to constraints bound to c.
+        - For S ⊆ K and time t ∈ T,
+          - S|_t = {k ∈ S | t ∈ W_k} — projection of S to constraints active at t.
+      - These projections commute with intersection:
+        - (S₁ ∩ S₂)|_c = S₁|_c ∩ S₂|_c,
+        - (S₁ ∩ S₂)|_t = S₁|_t ∩ S₂|_t.
+      - They provide the basic algebra needed for reasoning about constraint subsets relevant to particular spacetime regions of the agent’s activity.
+    - 4.2 Aggregation of graded evaluations
+      - For any finite S ⊆ K_soft and any assignment v : S → [0,1] of graded evaluations v(k) = γ_k(E, X, C), define an aggregation operator:
+        - Γ_S : [0,1]^S → [0,1].
+      - The ontology imposes the following invariants on Γ_S:
+        - **Monotonicity**
+          - If v, v′ : S → [0,1] satisfy v(k) ≤ v′(k) for all k ∈ S, then Γ_S(v) ≤ Γ_S(v′).
+        - **Idempotence on equal values**
+          - If v(k) = u for all k ∈ S, then Γ_S(v) = u.
+        - **Boundary conditions**
+          - Γ_S(v) = 0 if v(k) = 0 for all k ∈ S;
+          - Γ_S(v) = 1 if v(k) = 1 for all k ∈ S.
+      - No particular formula for Γ_S is fixed; aggregation is treated as an abstract operator that must satisfy these properties.
+    - 4.3 Conflict-resolution semantics
+      - For any locally active constraint set S = K_act(t, c), define a **conflict-resolution operator**:
+        - Res_S : ( (γ_k)_{k∈S} ) ↦ outcome_S
+      - where outcome_S is an abstract element of some partially ordered set ℛ_S representing overall constraint status at (t, c). The ontology requires:
+        - **1. Hard-override principle**
+          - If there exists k ∈ S ∩ K_hard with γ_k indicating violation, then outcome_S must be classified as “hard-violated” in ℛ_S, regardless of soft constraint satisfactions.
+        - **2. Soft trade-off**
+          - When all hard constraints in S are fulfilled, the ordering of outcomes induced by Res_S must respect Γ_S on the soft subset S_soft = S ∩ K_soft; i.e., if Γ_S_soft(v) ≥ Γ_S_soft(v′) then outcome_S(v) ≥ outcome_S(v′) in ℛ_S.
+        - **3. Consistency with individual evaluations**
+          - If S is a singleton {k}, then outcome_S must be a monotone embedding of γ_k into ℛ_S.
+      - The ontology does not fix the structure of ℛ_S (e.g. whether it is numeric, symbolic, or lattice-like); it only constrains its relationship to γ and Γ.
+    - 4.4 Adjustment and evolution operators (abstract)
+      - The adjustment history H_k is conceptually associated with an abstract **constraint-update operator**:
+        - update_K : (K, R) → K
+      - capturing how evidential records may induce changes to constraints.
+      - GAAO does not specify the internal form of update_K; it only requires that:
+        - update_K preserve all well-formedness conditions (Section 3.1),
+        - updates to individual constraints be recorded in the corresponding H_k,
+        - the induced evolution of K_t in the agent state (K_t, C_t, X_t, E_t, R_t) be compatible with the global state-transition operator 𝓛 of the recursive loop.
+  - 5. Interfaces and Cross-Layer Coherence
+    - 5.1 Interface with Event Ledger E
+      - Events inhabit:
+        - E ⊆ T × T × C × M × A × A × X × Ω × D × 𝒫(K)
+      - with each event e including κ ⊆ K as its applicable constraint set.
+      - The following must hold:
+        - κ must be a subset of K_act(t, λ_c) for times t in the event’s temporal interval, as stated in Section 3.2,
+        - evidence of constraint fulfilment or violation derived from events must be representable as evidence records in R (Section 5.4).
+      - This enforces **Event–Constraint Coherence**: events may only reference constraints that are both defined and active for their time and container.
+    - 5.2 Interface with Semantic Topology C
+      - Each constraint k carries a set L_c ⊆ C of bound containers.
+      - Cross-layer invariants:
+        - L_c ⊆ C_t for all times t in the activation window W_k, where C_t is the container set at time t,
+        - any topological transformation of C (e.g. container creation, deletion, or re-parenting) must preserve referential integrity of all L_c sets (no dangling container references),
+        - the rooted-tree invariant G = (C, parent) of the Semantic Topology Layer must remain satisfied under constraints that refer to containers; constraints cannot demand topologies that contradict the tree structure.
+    - 5.3 Interface with Condition Space X
+      - Constraint evaluations depend on condition profiles:
+        - γ_k : (E, X, C) → [0,1] ∪ {fulfilled, violated},
+        - X_t ⊆ X is the condition profile at time t.
+      - Coherence requirements:
+        - γ_k must be well-typed for any X that satisfies the Condition Space invariants,
+        - constraint classifications (e.g. K_comp vs K_noncomp) may depend on the structure of X but cannot modify it,
+        - any evolution of X via update_M and update_X must not retroactively invalidate previously well-typed evaluations γ_k(E, X, C) recorded in R.
+    - 5.4 Interface with Evidential Graph R
+      - Evidence records have the form:
+        - r = (id, type, t, c, k, e, raw, derived, conf, src) ∈ R,
+      - with k ∈ K referencing the relevant constraint.
+      - Coherence conditions:
+        - every k appearing in an evidence record must belong to K,
+        - evidence of deviations (e.g. δ = f_δ(π, α)) can be linked to constraint evaluations via k and κ in E,
+        - drift and trajectory signals extracted by Drift and 𝒯_r operators may be interpreted relative to intention descriptors ι and activation windows W in K, but such interpretations must not alter the underlying evidential definitions.
+    - 5.5 Interface with Transformation Layer (P, Ω)
+      - Progress records p and outcome records ω are derived from (E, C, R).
+      - The Constraint Fabric relates to these via:
+        - constraints may interpret certain metrics in Λ as progress measures relative to ι and θ,
+        - constraints may treat particular outcome patterns in Ω as success or failure conditions,
+        - any such interpretations must be encoded through γ_k and not by altering the canonical structure of p or ω.
+      - Thus, constraints provide the normative frame within which progress and outcomes are evaluated, while the Transformation Layer provides the raw measures and signals.
+    - 5.6 Interface with Adaptive Reasoning I and Recursive Loop L
+      - The Adaptive Reasoning Engine consumes K explicitly:
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ},
+        - I_plan(K, X, C) → Π,
+        - I_adj(K, C, X, R) → Δ.
+      - Interfaces:
+        - planning operators may use K, along with container and condition information, to propose future event sequences that respect hard constraints and maximise alignment with soft constraints,
+        - adjustment operators may propose updates to K (via update_K) or to the event/condition configuration to restore constraint alignment,
+        - the loop schema L and state transition operator 𝓛 evolve K_t over time as part of state_t = (K_t, C_t, X_t, E_t, R_t).
+      - Coherence requirement:
+        - the application of I and 𝓛 must not produce states that violate the well-formedness and coherence conditions of the Constraint Fabric; in particular, W ⊆ T, L_c ⊆ C, and γ_k codomain constraints must remain satisfied for all k ∈ K_t.
+  - 6. Ontological Status and Versioning
+    - K is a primitive component of the GAAO tuple A = (E, C, K, X, R, P, Ω, I, L).
+    - This document fixes the canonical structure and invariants of the Constraint Fabric Layer for GAAO Formal Ontology v1.0.
+    - Any change that alters:
+      - the shape of constraint records k,
+      - the codomain or typing of γ_k,
+      - the basic hard/soft or computable/non-computable classifications,
+      - or the cross-layer coherence conditions involving K,
+    - constitutes a canonical modification and must follow the GAAO Build Log and versioning protocol.
+    - Under these rules, the Constraint Fabric **K** remains the locus of agent-level responsibility, coherence, and viability within the GAAO ontology, while remaining fully interoperable with the Event Ledger, Semantic Topology, Condition Space, Evidential Graph, Transformation Layer, Adaptive Reasoning Engine, and Recursive Loop.

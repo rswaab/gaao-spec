@@ -1,0 +1,205 @@
+Canon – Semantic Topology Layer (GAAO v1.0)
+=====
+  - 1. Purpose and Scope
+    - The Semantic Topology Layer **C** of the General Adaptive Agent Ontology (GAAO) specifies:
+      - the semantic container set **C**,
+      - the container-type set **𝒯**,
+      - and the rooted-tree topology
+        - G = (C, parent)
+    - that organises the semantic regions the agent inhabits.
+    - This document:
+      - fixes the internal structure of semantic containers,
+      - defines the container-type assignment and container hierarchy,
+      - states membership and nesting rules for containers in the rooted tree,
+      - characterises semantic constraints on the topology and attached histories,
+      - specifies allowable topology transformations at the ontological level,
+      - and formalises interfaces between **C** and the layers **E, K, X, R, P, Ω, I, L** of the agent tuple
+        - A = (E, C, K, X, R, P, Ω, I, L).
+    - All definitions specialise the global primitives and structures already defined in the GAAO v1.0 System Spec, Formal Ontology, and Preprint; no primitive set or operator is redefined.
+  - 2. Semantic Container Structure
+    - 2.1 Primitive sets and references
+      - This layer relies on the primitive sets and structures:
+        - T — time domain,
+        - C — semantic containers,
+        - 𝒯 — container-type set,
+        - E — event ledger,
+        - K — constraints,
+        - X — condition space,
+        - R — evidence records,
+        - P — progress records,
+        - Ω — outcome records,
+        - D — deviation space.
+      - Events inhabit:
+        - E ⊆ T × T × C × M × A × A × X × Ω × D × 𝒫(K)
+      - and include the container reference λ_c ∈ C.
+    - 2.2 Semantic container records
+      - A **semantic container** is a record:
+        - c = (id, τ, parent, ς, H_e, H_ω, H_p, H_ϕ) ∈ C
+      - where:
+        - id — unique container identifier,
+        - τ ∈ 𝒯 — container type,
+        - parent ∈ C ∪ {∅} — unique parent container or null (root),
+        - ς — container state vector,
+        - H_e — event history attached to the container,
+        - H_ω — outcome history,
+        - H_p — progress history,
+        - H_ϕ — drift history (sequence of drift signals ϕ).
+      - The ontology leaves the internal structure of ς and the detailed representation of H_e, H_ω, H_p, H_ϕ abstract; they are only constrained by the typing and coherence conditions below.
+      - **Histories H_e, H_ω, H_p, H_ϕ are derived structures over the primitive sets E, Ω, P, Φ**:
+        - no new primitive sets are introduced; histories are selections and aggregations of existing records.
+    - 2.3 Semantic topology as rooted tree
+      - The semantic topology is given by:
+        - G = (C, parent),
+      - with parent : C → C ∪ {∅}, and must form a rooted tree with standard properties:
+        - each container has at most one parent,
+        - there is exactly one root r ∈ C with parent(r) = ∅,
+        - G is acyclic and connected at the root.
+      - These properties are part of the global well-formedness conditions for any GAAO-compliant agent.
+    - 2.4 Container histories and attached records
+      - For each container c = (id, τ, parent, ς, H_e, H_ω, H_p, H_ϕ):
+        - H_e(c) is a sequence (or set) of events in E,
+        - H_ω(c) is a sequence of outcome records in Ω,
+        - H_p(c) is a sequence of progress records in P,
+        - H_ϕ(c) is a sequence of drift signals ϕ, each derivable from evidence via the Drift operator.
+      - The ontological requirement is that these histories are well-typed and referentially coherent with E, P, Ω, and R; no particular storage or indexing scheme is imposed.
+  - 3. Internal Invariants of the Semantic Topology
+    - 3.1 Well-formedness of containers
+      - For every container c = (id, τ, parent, ς, H_e, H_ω, H_p, H_ϕ) ∈ C, a GAAO-compliant agent must satisfy:
+        - **1. Typing constraints**
+          - τ ∈ 𝒯,
+          - parent ∈ C ∪ {∅},
+          - H_e(c) ⊆ E,
+          - H_ω(c) ⊆ Ω,
+          - H_p(c) ⊆ P,
+          - each element of H_ϕ(c) is a drift signal in the image of Drift : R → {ϕ₁,…,ϕₙ}.
+        - **2. Identity and uniqueness**
+          - id is globally unique within C,
+          - references to containers from other layers (e.g. λ_c in E, c in P, c in R) must refer to these containers (typically via their ids at the implementation level).
+        - **3. Parent coherence**
+          - if parent(c) = ∅, then c is the unique root,
+          - if parent(c) ≠ ∅, then parent(c) ∈ C.
+    - 3.2 Topological integrity
+      - The semantic container graph must be a rooted tree:
+        - G = (C, parent) with parent : C → C ∪ {∅},
+        - cycles are forbidden,
+        - there is exactly one root,
+        - for every c ∈ C, repeated application of parent eventually reaches the root.
+      - Let:
+        - root(G) denote the unique root,
+        - anc(c) the finite set of ancestors of c (including the root, excluding c),
+        - desc(c) the set of descendants of c (excluding c).
+      - These derived sets must be well-defined for all containers in any valid state_t = (K_t, C_t, X_t, E_t, R_t).
+    - 3.3 History coherence
+      - For each container c with identifier id(c):
+        - **Event–container coherence**
+          - every event e ∈ H_e(c) must satisfy λ_c(e) = c,
+          - conversely, any event e ∈ E whose λ_c(e) = c is eligible to belong to H_e(c).
+        - **Progress–container coherence**
+          - every progress record p ∈ H_p(c) has p.c = c (its container field), as specified by the transformation layer definition.
+        - **Outcome–container coherence**
+          - every outcome record in H_ω(c) must be an element of Ω and traceable to events whose λ_c(e) = c, consistent with P and Ω being derived from (E, C, R) under the loop L.
+        - **Drift–container coherence**
+          - every drift signal ϕ ∈ H_ϕ(c) must be associated to c via its container or link fields as defined in the evidential layer (e.g. trajectory/container links).
+      - The exact representation of histories (ordered sequences vs sets, indexing structures, etc.) is an implementation detail outside this ontology; only typing and referential properties are fixed.
+    - 3.4 Temporal and state coherence
+      - At time t, the operational state is:
+        - state_t = (K_t, C_t, X_t, E_t, R_t), as defined in the Formal Ontology canon.
+      - The Semantic Topology Layer must satisfy:
+        - C_t ⊆ C and forms a rooted tree under parent,
+        - histories H_e, H_ω, H_p, H_ϕ for containers in C_t reference only events, outcomes, progress records, and drift signals that are compatible with E_t and R_t,
+        - container state vectors ς may depend on (E_t, X_t, R_t, P, Ω) but this dependence is left abstract at the ontology level.
+  - 4. Topology Operations and Allowed Transformations
+    - This section defines abstract operations over G = (C, parent); no algorithms or implementation strategies are fixed.
+    - 4.1 Basic topological operators
+      - For c ∈ C:
+        - children(c) = { c′ ∈ C | parent(c′) = c },
+        - anc(c) — ancestor set defined by repeated parent application,
+        - desc(c) — all containers reachable by descending child links from c,
+        - subtree(c) = {c} ∪ desc(c).
+      - These operators are required only to be well-defined over the rooted tree; no further algebraic structure is imposed.
+    - 4.2 Container-transform operators (abstract)
+      - Let **T_C** denote the class of admissible topology transformations acting on (C, parent). A transformation τ_C ∈ T_C is an abstract operation:
+        - τ_C : (C, parent) ↦ (C′, parent′)
+      - subject to:
+        - (C′, parent′) is again a rooted tree,
+        - all container identifiers remain unique,
+        - any container referenced from E, K, R, P, Ω remains present or is updated in a referentially coherent way.
+      - The ontology does **not** specify the form of τ_C (e.g. “create”, “delete”, “re-parent”); it only requires that any allowed transformation preserve the tree invariants and cross-layer coherence conditions in Section 5.
+    - 4.3 Container-state updates
+      - Container state vectors ς may change under the global state-transition operator 𝓛 induced by the recursive loop L:
+        - state_{t+1} = 𝓛(state_t).
+      - At the ontology level:
+        - 𝓛 may alter C_t (including its topology) and ς for containers,
+        - 𝓛 must preserve rooted-tree integrity of (C_{t+1}, parent),
+        - 𝓛 must preserve the typing and coherence constraints on histories and cross-layer references.
+  - 5. Interfaces and Cross-Layer Coherence
+    - 5.1 Interface with Event Ledger E
+      - Events are defined as:
+        - e = (t_s, t_e, λ_c, λ_m, π, α, σ, ω, δ, κ) ∈ E
+      - with λ_c ∈ C the semantic container reference.
+      - Coherence conditions:
+        - **Event–container reference:**
+          - every event’s λ_c must be some container c ∈ C,
+          -  if λ_c(e) = c, then e is eligible to appear in H_e(c).
+        - **Tree-respecting event semantics:**
+          - events attached to descendant containers desc(c) can be aggregated to subtree-level views without breaking tree invariants; the ontology does not fix aggregation operators but assumes their typing is compatible with G.
+      - This realises the **mapping from events into containers**: events reference containers via λ_c, and containers accumulate event histories H_e coherent with E.
+    - 5.2 Interface with Constraint Fabric K
+      - Constraints are records:
+        - k = (id, ι, θ, μ, W, L_c, γ, H_k) ∈ K
+      - where L_c ⊆ C is the set of bound containers.
+      - Cross-layer invariants:
+        - every container referenced in L_c must belong to C,
+        - constraints may bind simultaneously to multiple containers; this does not alter the tree structure,
+        - any topology transformation τ_C must preserve or explicitly update L_c to avoid dangling container references; the ontology requires that resulting L_c′ ⊆ C′.
+      - Thus, the Semantic Topology provides the “where” for constraints that encode “what is supposed to happen” in those regions.
+    - 5.3 Interface with Condition Space X
+      - The condition profile at time t is:
+        - X_t ⊆ X.
+      - The Condition Space Layer does not fix a direct map from X to C. At the ontology level:
+        - condition dimensions and models may be interpreted relative to containers (e.g. “conditions within subtree(c)”),
+        - container state vectors ς may summarise aspects of X_t restricted to events and evidence attached to the container,
+        - any such interpretations must be representable without modifying the definitions of X, C, or their primitive operators.
+      - Adaptive reasoning operators (Section 5.6) mediate much of this interaction.
+    - 5.4 Interface with Evidential Graph R
+      - Evidence records are:
+        - r = (id, type, t, c, k, e, raw, derived, conf, src) ∈ R
+      - where the field c ∈ C identifies the container at which the evidence is anchored.
+      - Coherence requirements:
+        - c must be a valid container id; no evidence may reference containers outside C,
+        - if e appears in raw or derived fields, and e has λ_c(e) = id(c), then r may also be included in the histories H_e(c) or H_ϕ(c) via drift/trajectory extraction,
+        - drift and trajectory signals produced by Drift and 𝒯_r operators may include container references which must be consistent with G and the H_ϕ histories of the referenced containers.
+      - The Semantic Topology thus serves as spatial scaffolding for evidence localisation and pattern attachment.
+    - 5.5 Interface with Transformation Layer (P, Ω)
+      - The transformation layer defines:
+        - progress records p = (c, metric, v, d, e, t) with c ∈ C,
+        - outcome records ω = (i, x, s, δ) ∈ Ω,
+      - and P, Ω are derived from (E, C, R) under the loop L.
+      - Coherence conditions:
+        - for each progress record p, its c must be a valid container in C; such records are eligible members of H_p(c),
+        - outcome records in H_ω(c) must be associated to events whose λ_c(e) = id(c); the exact association (direct vs inferred) is left to instance projects, but must remain referentially consistent.
+      - The topology G supports multi-scale progress and outcome views by aggregating H_p and H_ω over subtrees subtree(c). The ontology does not fix aggregation operators, only requires that aggregation respect the tree structure.
+    - 5.6 Interface with Adaptive Reasoning I and Recursive Loop L
+      - The adaptive reasoning engine is:
+        - I : (X, E, K, C, R) → {Π, Δ, S, Υ},
+      - with specialised operators I_plan(K, X, C) → Π and I_adj(K, C, X, R) → Δ.
+      - Interfaces:
+        - planning operators may use the topology G to propose plans structured over containers and their subtrees,
+        - adjustment operators may propose modifications to C (within T_C) or to K, X, E so as to restore alignment with constraints while preserving topological invariants,
+        - I must respect the rooted-tree structure of C when interpreting or adjusting container-level semantics; no reasoning step may implicitly violate the invariants in Section 3.2.
+      - The recursive loop schema L induces state evolution:
+        - state_t = (K_t, C_t, X_t, E_t, R_t),
+        - state_{t+1} = 𝓛(state_t).
+      - Coherence requirement:
+        - 𝓛 must preserve topological integrity of C_t and well-formedness of container records at each step,
+        - any changes to C_t (including creation, deletion, or re-parenting of containers) must be compatible with E_t, K_t, X_t, R_t, P, Ω and the referential constraints above.
+  - 6. Ontological Status and Versioning
+    - C is a primitive component of the GAAO tuple A = (E, C, K, X, R, P, Ω, I, L).
+    - This document fixes the canonical structure and invariants of the Semantic Topology Layer for GAAO Formal Ontology v1.0.
+    - Any change that alters:
+      - the shape of container records c,
+      - the rooted-tree constraint on G = (C, parent),
+      - the typing or coherence requirements for histories H_e, H_ω, H_p, H_ϕ,
+      - or the cross-layer coherence conditions involving C,
+      - constitutes a canonical modification and must follow the GAAO Build Log and versioning protocol.
+    - Under these rules, the Semantic Topology Layer **C** remains the canonical locus of “where behaviour lives” in GAAO, providing the hierarchical semantic structure against which events, constraints, conditions, evidence, progress, outcomes, and adaptive reasoning are all situated.
